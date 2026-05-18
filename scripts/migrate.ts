@@ -134,10 +134,23 @@ function pickAddress(addresses?: NPIAddress[]): NPIAddress | undefined {
 
 function titleCase(str: string): string {
   if (!str) return "";
+  // Split on whitespace, punctuation, AND apostrophe (so O'Brien tokenizes
+  // as "o" + "'" + "brien" and we can capitalize the letter after the apostrophe).
   return str
     .toLowerCase()
-    .split(/(\s|[-,.])/)
-    .map((part) => (part.length > 0 && /[a-z]/.test(part[0]) ? part[0].toUpperCase() + part.slice(1) : part))
+    .split(/(\s|[-,.\/'"])/)
+    .map((part) => {
+      if (part.length === 0) return part;
+      // "Mc" + lowercase letter → capitalize both M and the letter after Mc
+      // (McLean, McCarthy, McAllen, McKinney, ...).
+      if (/^mc[a-z]/.test(part)) {
+        return "Mc" + part.charAt(2).toUpperCase() + part.slice(3);
+      }
+      if (/[a-z]/.test(part[0])) {
+        return part[0].toUpperCase() + part.slice(1);
+      }
+      return part;
+    })
     .join("");
 }
 

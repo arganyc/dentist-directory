@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "import-dentists": "node scripts/import-dentists.ts",
-    "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.ts"
+    "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.ts",
+    "db:fix-casing": "node --env-file-if-exists=.env.local scripts/fix-casing.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
