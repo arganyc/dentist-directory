@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "import-dentists": "node scripts/import-dentists.ts",
+    "import-capped": "node scripts/import-capped-cities.ts",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.ts",
     "db:fix-casing": "node --env-file-if-exists=.env.local scripts/fix-casing.ts"
   },
