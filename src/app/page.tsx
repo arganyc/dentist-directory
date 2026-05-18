@@ -5,11 +5,19 @@ import Newsletter from "@/components/Newsletter";
 import { allSpecialties } from "@/lib/dentists";
 import { getFeaturedDentists, getTopCities, getTotalDentistCount } from "@/lib/dentists-data";
 
-export const metadata = {
-  title: { absolute: "SmileFinder — Find a Dentist in Your City" },
-  description:
-    "Browse 60,000+ verified US dentists by city, state, and specialty. Read reviews, compare ratings, and book with practices accepting new patients today.",
-};
+// Render at request time so the live DB count is always reflected.
+// Without this, Next.js statically renders the page at build time and the
+// hero count drifts whenever new dentists are added between deploys.
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata() {
+  const total = await getTotalDentistCount();
+  const formatted = total.toLocaleString("en-US");
+  return {
+    title: { absolute: "SmileFinder — Find a Dentist in Your City" },
+    description: `Browse ${formatted} verified US dentists by city, state, and specialty. Read reviews, compare ratings, and book with practices accepting new patients today.`,
+  };
+}
 
 const POPULAR_CITIES = [
   { city: "New York", state: "NY" },
