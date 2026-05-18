@@ -1,7 +1,11 @@
 import Link from "next/link";
 import DentistCard from "@/components/DentistCard";
 import Filters from "@/components/Filters";
-import { dentists } from "@/lib/dentists";
+import Pagination from "@/components/Pagination";
+import { stateNameByCode } from "@/lib/dentists";
+import { getCitiesForState, searchDentists } from "@/lib/dentists-data";
+
+const PER_PAGE = 20;
 
 export const metadata = {
   title: "Find a Dentist",
@@ -14,6 +18,15 @@ function pickString(value: string | string[] | undefined): string {
   return value ?? "";
 }
 
+function flatten(sp: Record<string, string | string[] | undefined>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(sp)) {
+    const value = pickString(v);
+    if (value) out[k] = value;
+  }
+  return out;
+}
+
 export default async function DentistsPage(props: PageProps<"/dentists">) {
   const sp = await props.searchParams;
 
@@ -21,19 +34,32 @@ export default async function DentistsPage(props: PageProps<"/dentists">) {
   const city = pickString(sp.city);
   const specialty = pickString(sp.specialty);
   const accepting = pickString(sp.accepting) === "true";
-  const location = pickString(sp.location).toLowerCase();
+  const location = pickString(sp.location);
+  const pageParam = parseInt(pickString(sp.page), 10);
+  const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
 
-  const filtered = dentists.filter((d) => {
-    if (state && d.address.stateCode !== state) return false;
-    if (city && d.address.city !== city) return false;
-    if (specialty && d.specialty !== specialty) return false;
-    if (accepting && !d.acceptingNewPatients) return false;
-    if (location) {
-      const haystack = `${d.address.city} ${d.address.state} ${d.address.stateCode}`.toLowerCase();
-      if (!haystack.includes(location)) return false;
-    }
-    return true;
+  const { results, total, totalPages, page: currentPage } = searchDentists({
+    state,
+    city,
+    specialty,
+    acceptingOnly: accepting,
+    location,
+    page,
+    perPage: PER_PAGE,
   });
+
+  const availableCities = state ? getCitiesForState(state) : [];
+
+  const summaryParts: string[] = [];
+  if (location) summaryParts.push(`matching "${location}"`);
+  if (state) summaryParts.push(`in ${stateNameByCode(state)}`);
+  if (city) summaryParts.push(`in ${city}`);
+  if (specialty) summaryParts.push(`· ${specialty}`);
+  if (accepting) summaryParts.push("· accepting new patients");
+  const summary = summaryParts.length > 0 ? summaryParts.join(" ") : "across the US";
+
+  const startIndex = total === 0 ? 0 : (currentPage - 1) * PER_PAGE + 1;
+  const endIndex = Math.min(currentPage * PER_PAGE, total);
 
   return (
     <div className="bg-slate-50">
@@ -45,23 +71,27 @@ export default async function DentistsPage(props: PageProps<"/dentists">) {
             </Link>{" "}
             / <span className="text-slate-700">Find a Dentist</span>
           </nav>
-          <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
-            Find a Dentist
-          </h1>
+          <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">Find a Dentist</h1>
           <p className="mt-2 text-slate-600">
-            {filtered.length} {filtered.length === 1 ? "dentist" : "dentists"}{" "}
-            {location ? `matching “${location}”` : "available"}
-            {state && ` in ${state}`}
-            {specialty && ` · ${specialty}`}
+            {total === 0 ? (
+              <>No dentists found {summary}</>
+            ) : (
+              <>
+                Showing <span className="font-semibold text-slate-900">{startIndex.toLocaleString()}</span>–
+                <span className="font-semibold text-slate-900">{endIndex.toLocaleString()}</span> of{" "}
+                <span className="font-semibold text-slate-900">{total.toLocaleString()}</span>{" "}
+                {total === 1 ? "dentist" : "dentists"} {summary}
+              </>
+            )}
           </p>
         </div>
       </div>
 
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[280px_1fr] lg:px-8">
-        <Filters />
+        <Filters availableCities={availableCities} />
 
         <main>
-          {filtered.length === 0 ? (
+          {results.length === 0 ? (
             <div className="rounded-xl border border-dashed border-blue-200 bg-white p-12 text-center">
               <h2 className="text-lg font-semibold text-slate-900">No dentists found</h2>
               <p className="mt-2 text-sm text-slate-600">
@@ -75,11 +105,19 @@ export default async function DentistsPage(props: PageProps<"/dentists">) {
               </Link>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {filtered.map((d) => (
-                <DentistCard key={d.id} dentist={d} />
-              ))}
-            </div>
+            <>
+              <div className="grid gap-4 md:grid-cols-2">
+                {results.map((d) => (
+                  <DentistCard key={d.id} dentist={d} />
+                ))}
+              </div>
+              <Pagination
+                page={currentPage}
+                totalPages={totalPages}
+                basePath="/dentists"
+                searchParams={flatten(sp)}
+              />
+            </>
           )}
         </main>
       </div>

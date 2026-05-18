@@ -2,9 +2,13 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import { allCities, allSpecialties, allStates } from "@/lib/dentists";
+import { allSpecialties, US_STATES } from "@/lib/dentists";
 
-export default function Filters() {
+type Props = {
+  availableCities: string[];
+};
+
+export default function Filters({ availableCities }: Props) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -14,18 +18,22 @@ export default function Filters() {
   const accepting = params.get("accepting") === "true";
   const location = params.get("location") ?? "";
 
-  const updateParam = useCallback(
-    (key: string, value: string) => {
+  const update = useCallback(
+    (changes: Record<string, string>) => {
       const sp = new URLSearchParams(params.toString());
-      if (value) sp.set(key, value);
-      else sp.delete(key);
+      for (const [key, value] of Object.entries(changes)) {
+        if (value) sp.set(key, value);
+        else sp.delete(key);
+      }
+      // Any filter change resets to page 1
+      sp.delete("page");
       router.push(`/dentists${sp.toString() ? `?${sp.toString()}` : ""}`);
     },
     [params, router]
   );
 
   const clear = () => router.push("/dentists");
-  const hasFilters = state || city || specialty || accepting || location;
+  const hasFilters = Boolean(state || city || specialty || accepting || location);
 
   return (
     <aside className="rounded-xl border border-blue-100 bg-white p-5 shadow-sm">
@@ -48,7 +56,7 @@ export default function Filters() {
           <button
             type="button"
             className="ml-1 font-semibold underline"
-            onClick={() => updateParam("location", "")}
+            onClick={() => update({ location: "" })}
           >
             remove
           </button>
@@ -62,11 +70,11 @@ export default function Filters() {
           </label>
           <select
             value={state}
-            onChange={(e) => updateParam("state", e.target.value)}
+            onChange={(e) => update({ state: e.target.value, city: "" })}
             className="mt-1.5 block w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
           >
             <option value="">All states</option>
-            {allStates.map((s) => (
+            {US_STATES.map((s) => (
               <option key={s.code} value={s.code}>
                 {s.name}
               </option>
@@ -80,11 +88,14 @@ export default function Filters() {
           </label>
           <select
             value={city}
-            onChange={(e) => updateParam("city", e.target.value)}
-            className="mt-1.5 block w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            onChange={(e) => update({ city: e.target.value })}
+            disabled={!state}
+            className="mt-1.5 block w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
           >
-            <option value="">All cities</option>
-            {allCities.map((c) => (
+            <option value="">
+              {state ? `All cities in ${state}` : "Select a state first"}
+            </option>
+            {availableCities.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
@@ -98,7 +109,7 @@ export default function Filters() {
           </label>
           <select
             value={specialty}
-            onChange={(e) => updateParam("specialty", e.target.value)}
+            onChange={(e) => update({ specialty: e.target.value })}
             className="mt-1.5 block w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
           >
             <option value="">All specialties</option>
@@ -114,7 +125,7 @@ export default function Filters() {
           <input
             type="checkbox"
             checked={accepting}
-            onChange={(e) => updateParam("accepting", e.target.checked ? "true" : "")}
+            onChange={(e) => update({ accepting: e.target.checked ? "true" : "" })}
             className="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
           />
           <span className="text-sm font-medium text-slate-800">Accepting new patients only</span>

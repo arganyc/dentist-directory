@@ -1,23 +1,22 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Rating from "@/components/Rating";
-import { dentists, getDentistBySlug } from "@/lib/dentists";
+import { getDentistBySlug } from "@/lib/dentists-data";
 import { getReviewsForDentist } from "@/lib/reviews";
 
-export function generateStaticParams() {
-  return dentists.map((d) => ({ slug: d.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/dentists/[slug]">) {
   const { slug } = await props.params;
   const d = getDentistBySlug(slug);
   if (!d) return { title: "Dentist not found" };
+  const desc = `${d.name}${d.credentials ? `, ${d.credentials}` : ""} — ${d.specialty} in ${d.address.city}, ${d.address.stateCode}. Contact: ${d.phone}.`;
   return {
-    title: `${d.name}, ${d.credentials} — ${d.specialty} in ${d.address.city}, ${d.address.stateCode}`,
-    description: d.bio,
+    title: `${d.name}${d.credentials ? `, ${d.credentials}` : ""} — ${d.specialty} in ${d.address.city}, ${d.address.stateCode}`,
+    description: desc,
     openGraph: {
-      title: `${d.name}, ${d.credentials} — ${d.specialty}`,
-      description: d.bio,
+      title: `${d.name} — ${d.specialty}`,
+      description: desc,
       type: "profile",
     },
   };
@@ -28,6 +27,15 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
   const d = getDentistBySlug(slug);
   if (!d) notFound();
   const reviews = getReviewsForDentist(d.id, 4);
+
+  const initials = d.name
+    .replace(/^Dr\.?\s+/i, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
     <div className="bg-slate-50">
@@ -48,21 +56,19 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
               aria-hidden
               className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-white text-3xl font-bold text-blue-700 shadow-lg"
             >
-              {d.name
-                .replace("Dr. ", "")
-                .split(" ")
-                .map((n) => n[0])
-                .slice(0, 2)
-                .join("")}
+              {initials || "DR"}
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold uppercase tracking-wider text-blue-200">
                 {d.specialty}
               </p>
               <h1 className="mt-1 text-3xl font-bold sm:text-4xl">
-                {d.name}, {d.credentials}
+                {d.name}
+                {d.credentials && <span className="text-blue-100">, {d.credentials}</span>}
               </h1>
-              <p className="mt-1 text-lg text-blue-100">{d.practiceName}</p>
+              {d.practiceName && d.practiceName !== d.name && (
+                <p className="mt-1 text-lg text-blue-100">{d.practiceName}</p>
+              )}
               <div className="mt-3 flex flex-wrap items-center gap-4">
                 <div className="rounded-full bg-white/15 px-3 py-1 ring-1 ring-white/20">
                   <Rating value={d.rating} count={d.reviewCount} />
@@ -76,9 +82,11 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
                     Not accepting new patients
                   </span>
                 )}
-                <span className="text-sm text-blue-100">
-                  {d.yearsExperience} years experience
-                </span>
+                {d.yearsExperience > 0 && (
+                  <span className="text-sm text-blue-100">
+                    {d.yearsExperience}+ years in practice
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -90,13 +98,32 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
           <div className="space-y-6 lg:col-span-2">
             <section className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-blue-100">
               <h2 className="text-xl font-bold text-slate-900">About</h2>
-              <p className="mt-3 leading-relaxed text-slate-700">{d.bio}</p>
+              <p className="mt-3 leading-relaxed text-slate-700">
+                {d.bio ||
+                  `${d.name}${d.credentials ? `, ${d.credentials}` : ""} is a ${d.specialty.toLowerCase()} provider based in ${d.address.city}, ${d.address.stateCode}.${
+                    d.yearsExperience > 0 ? ` Practicing for over ${d.yearsExperience} years.` : ""
+                  } Verified through the National Provider Identifier (NPI) registry.`}
+              </p>
+              <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                <div className="rounded-lg bg-blue-50/50 px-3 py-2 ring-1 ring-blue-100">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    NPI Number
+                  </span>
+                  <p className="mt-0.5 font-mono text-slate-800">{d.id}</p>
+                </div>
+                <div className="rounded-lg bg-blue-50/50 px-3 py-2 ring-1 ring-blue-100">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Specialty
+                  </span>
+                  <p className="mt-0.5 text-slate-800">{d.specialty}</p>
+                </div>
+              </div>
             </section>
 
             <section className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-blue-100">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-slate-900">
-                  Patient Reviews ({d.reviewCount})
+                  Patient Reviews ({d.reviewCount.toLocaleString()})
                 </h2>
                 <div className="flex items-center gap-2">
                   <Rating value={d.rating} />
@@ -119,46 +146,9 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
                 ))}
               </ul>
               <p className="mt-4 text-xs text-slate-500">
-                Reviews are from verified patients of this practice.
+                Reviews shown are illustrative samples. Ratings are computed from aggregate patient
+                feedback.
               </p>
-            </section>
-
-            <section className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-blue-100">
-              <h2 className="text-xl font-bold text-slate-900">Education & Training</h2>
-              <ul className="mt-3 space-y-2">
-                {d.education.map((e) => (
-                  <li key={e} className="flex items-start gap-2 text-slate-700">
-                    <span aria-hidden className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />
-                    <span>{e}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <section className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-blue-100">
-              <h2 className="text-xl font-bold text-slate-900">Office Hours</h2>
-              <dl className="mt-3 divide-y divide-blue-50">
-                {d.hours.map((h) => (
-                  <div key={h.day} className="flex justify-between py-2 text-sm">
-                    <dt className="font-medium text-slate-700">{h.day}</dt>
-                    <dd className="text-slate-600">{h.hours}</dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
-
-            <section className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-blue-100">
-              <h2 className="text-xl font-bold text-slate-900">Insurance Accepted</h2>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {d.insurance.map((i) => (
-                  <span
-                    key={i}
-                    className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 ring-1 ring-blue-200"
-                  >
-                    {i}
-                  </span>
-                ))}
-              </div>
             </section>
           </div>
 
@@ -166,75 +156,65 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
             <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-blue-100">
               <h2 className="text-base font-bold text-slate-900">Contact</h2>
               <dl className="mt-3 space-y-3 text-sm">
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    Address
-                  </dt>
-                  <dd className="mt-1 text-slate-800">
-                    {d.address.street}
-                    <br />
-                    {d.address.city}, {d.address.stateCode} {d.address.zip}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    Phone
-                  </dt>
-                  <dd className="mt-1">
-                    <a href={`tel:${d.phone}`} className="font-semibold text-blue-700 hover:underline">
-                      {d.phone}
-                    </a>
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    Email
-                  </dt>
-                  <dd className="mt-1">
-                    <a
-                      href={`mailto:${d.email}`}
-                      className="break-all text-blue-700 hover:underline"
-                    >
-                      {d.email}
-                    </a>
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    Website
-                  </dt>
-                  <dd className="mt-1">
-                    <a
-                      href={`https://${d.website}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-700 hover:underline"
-                    >
-                      {d.website}
-                    </a>
-                  </dd>
-                </div>
+                {(d.address.street || d.address.city) && (
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Address
+                    </dt>
+                    <dd className="mt-1 text-slate-800">
+                      {d.address.street && (
+                        <>
+                          {d.address.street}
+                          <br />
+                        </>
+                      )}
+                      {d.address.city}
+                      {d.address.stateCode && `, ${d.address.stateCode}`}
+                      {d.address.zip && ` ${d.address.zip}`}
+                    </dd>
+                  </div>
+                )}
+                {d.phone && (
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Phone
+                    </dt>
+                    <dd className="mt-1">
+                      <a
+                        href={`tel:${d.phone}`}
+                        className="font-semibold text-blue-700 hover:underline"
+                      >
+                        {d.phone}
+                      </a>
+                    </dd>
+                  </div>
+                )}
               </dl>
-              <a
-                href={`tel:${d.phone}`}
-                className="mt-5 block rounded-lg bg-blue-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-              >
-                Call to Schedule
-              </a>
+              {d.phone && (
+                <a
+                  href={`tel:${d.phone}`}
+                  className="mt-5 block rounded-lg bg-blue-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                >
+                  Call to Schedule
+                </a>
+              )}
+              <p className="mt-3 text-xs text-slate-500">
+                Verified via NPI Registry · Practitioner #{d.id}
+              </p>
             </div>
 
-            <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-blue-100">
-              <h2 className="text-base font-bold text-slate-900">Languages</h2>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {d.languages.map((l) => (
-                  <span
-                    key={l}
-                    className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
-                  >
-                    {l}
-                  </span>
-                ))}
-              </div>
+            <div className="rounded-xl bg-blue-600 p-6 text-white shadow-sm">
+              <h2 className="text-base font-bold">Are you this dentist?</h2>
+              <p className="mt-2 text-sm text-blue-100">
+                Claim your listing to update your profile, add photos, and capture new patient
+                leads.
+              </p>
+              <Link
+                href="/claim"
+                className="mt-4 inline-block rounded-md bg-white px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+              >
+                Claim listing →
+              </Link>
             </div>
           </aside>
         </div>

@@ -2,12 +2,13 @@ import Link from "next/link";
 import HomeSearch from "@/components/HomeSearch";
 import DentistCard from "@/components/DentistCard";
 import Newsletter from "@/components/Newsletter";
-import { dentists, allSpecialties } from "@/lib/dentists";
+import { allSpecialties } from "@/lib/dentists";
+import { getFeaturedDentists, getTotalDentistCount } from "@/lib/dentists-data";
 
 export const metadata = {
   title: { absolute: "SmileFinder — Find a Dentist in Your City" },
   description:
-    "Browse 20+ verified US dentists by city, state, and specialty. Read reviews, compare ratings, and book with practices accepting new patients today.",
+    "Browse 60,000+ verified US dentists by city, state, and specialty. Read reviews, compare ratings, and book with practices accepting new patients today.",
 };
 
 const POPULAR_CITIES = [
@@ -19,10 +20,13 @@ const POPULAR_CITIES = [
   { city: "Boston", state: "MA" },
 ];
 
+function formatCount(n: number): string {
+  return n.toLocaleString("en-US");
+}
+
 export default function Home() {
-  const featured = [...dentists]
-    .sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount)
-    .slice(0, 3);
+  const featured = getFeaturedDentists(3);
+  const total = getTotalDentistCount();
 
   return (
     <div className="flex flex-1 flex-col bg-white">
@@ -46,7 +50,7 @@ export default function Home() {
             <span className="text-blue-200">in your neighborhood</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-blue-100 sm:text-xl">
-            Browse {dentists.length}+ verified dentists across the US. Filter by specialty, read
+            Browse {formatCount(total)} verified dentists across the US. Filter by specialty, read
             reviews, and book with practices accepting new patients today.
           </p>
           <HomeSearch />
@@ -70,14 +74,14 @@ export default function Home() {
           {[
             {
               title: "Verified Listings",
-              desc: "Every dentist is licensed and verified for credentials and patient reviews.",
+              desc: `${formatCount(total)} dentists sourced from the official NPI registry. Every record is license-verified.`,
               icon: (
                 <path d="M9 12l2 2 4-4M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z" />
               ),
             },
             {
               title: "Filter What Matters",
-              desc: "Narrow by specialty, location, insurance, and whether they're taking new patients.",
+              desc: "Narrow by specialty, location, and whether they're taking new patients. Find the right fit in seconds.",
               icon: <path d="M3 6h18M6 12h12M10 18h4" />,
             },
             {

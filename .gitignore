@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# NPI import output (large, regeneratable via `npm run import-dentists`)
+/dentists-data.json
