@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
       specialty: sp.get("specialty") ?? "",
       acceptingOnly: sp.get("accepting") === "true",
       location: sp.get("location") ?? "",
+      name: sp.get("name") ?? sp.get("q") ?? "",
       page,
       perPage,
     }),

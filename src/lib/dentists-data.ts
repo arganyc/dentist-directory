@@ -100,6 +100,7 @@ export type SearchOpts = {
   specialty?: string;
   acceptingOnly?: boolean;
   location?: string;
+  name?: string;
   page?: number;
   perPage?: number;
 };
@@ -139,6 +140,12 @@ export async function searchDentists(opts: SearchOpts): Promise<SearchResult> {
   if (opts.location && opts.location.trim()) {
     conditions.push(`LOWER(city || ' ' || state || ' ' || state_code) LIKE $${idx++}`);
     params.push(`%${opts.location.trim().toLowerCase()}%`);
+  }
+  if (opts.name && opts.name.trim()) {
+    const pattern = `%${opts.name.trim().toLowerCase()}%`;
+    conditions.push(`(LOWER(name) LIKE $${idx} OR LOWER(practice_name) LIKE $${idx})`);
+    idx++;
+    params.push(pattern);
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";

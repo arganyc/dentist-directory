@@ -35,6 +35,7 @@ export default async function DentistsPage(props: PageProps<"/dentists">) {
   const specialty = pickString(sp.specialty);
   const accepting = pickString(sp.accepting) === "true";
   const location = pickString(sp.location);
+  const name = pickString(sp.name);
   const pageParam = parseInt(pickString(sp.page), 10);
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
 
@@ -45,6 +46,7 @@ export default async function DentistsPage(props: PageProps<"/dentists">) {
       specialty,
       acceptingOnly: accepting,
       location,
+      name,
       page,
       perPage: PER_PAGE,
     }),
@@ -52,7 +54,8 @@ export default async function DentistsPage(props: PageProps<"/dentists">) {
   ]);
 
   const summaryParts: string[] = [];
-  if (location) summaryParts.push(`matching "${location}"`);
+  if (name) summaryParts.push(`matching "${name}"`);
+  if (location) summaryParts.push(`near "${location}"`);
   if (state) summaryParts.push(`in ${stateNameByCode(state)}`);
   if (city) summaryParts.push(`in ${city}`);
   if (specialty) summaryParts.push(`· ${specialty}`);
