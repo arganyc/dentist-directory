@@ -127,8 +127,8 @@ export async function searchDentists(opts: SearchOpts): Promise<SearchResult> {
     params.push(opts.state.toUpperCase());
   }
   if (opts.city) {
-    conditions.push(`city = $${idx++}`);
-    params.push(opts.city);
+    conditions.push(`LOWER(city) = $${idx++}`);
+    params.push(opts.city.toLowerCase());
   }
   if (opts.specialty) {
     conditions.push(`specialty = $${idx++}`);

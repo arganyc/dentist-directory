@@ -118,7 +118,12 @@ const CITIES_BY_STATE: Record<string, string[]> = {
   TX: ["Houston", "San Antonio", "Dallas", "Austin", "Fort Worth", "El Paso", "Arlington", "Corpus Christi", "Plano", "Lubbock"],
   UT: ["Salt Lake City", "West Valley City", "West Jordan", "Provo", "Orem", "Sandy", "Ogden", "Saint George", "Layton", "South Jordan"],
   VT: ["Burlington", "South Burlington", "Rutland", "Essex Junction", "Barre", "Montpelier", "Winooski", "Saint Albans", "Newport", "Vergennes"],
-  VA: ["Virginia Beach", "Norfolk", "Chesapeake", "Richmond", "Newport News", "Alexandria", "Hampton", "Roanoke", "Portsmouth", "Suffolk"],
+  VA: [
+    "Virginia Beach", "Norfolk", "Chesapeake", "Richmond", "Newport News", "Alexandria", "Hampton", "Roanoke", "Portsmouth", "Suffolk",
+    // Northern Virginia
+    "Arlington", "Ashburn", "McLean", "Reston", "Woodbridge", "Centreville", "Chantilly", "Sterling",
+    "Manassas", "Manassas Park", "Leesburg", "Vienna", "Herndon", "Purcellville", "Dumfries",
+  ],
   WA: ["Seattle", "Spokane", "Tacoma", "Vancouver", "Bellevue", "Kent", "Everett", "Renton", "Federal Way", "Yakima"],
   WV: ["Charleston", "Huntington", "Morgantown", "Parkersburg", "Wheeling", "Weirton", "Fairmont", "Martinsburg", "Beckley", "Clarksburg"],
   WI: ["Milwaukee", "Madison", "Green Bay", "Kenosha", "Racine", "Appleton", "Waukesha", "Eau Claire", "Oshkosh", "Janesville"],
