@@ -8,21 +8,21 @@ export async function GET(request: NextRequest) {
   const perPageRaw = parseInt(sp.get("perPage") ?? sp.get("limit") ?? "20", 10);
   const perPage = Math.min(100, Math.max(1, Number.isFinite(perPageRaw) ? perPageRaw : 20));
 
-  const {
-    results,
-    total,
-    page: currentPage,
-    perPage: appliedPerPage,
-    totalPages,
-  } = searchDentists({
-    state: sp.get("state") ?? "",
-    city: sp.get("city") ?? "",
-    specialty: sp.get("specialty") ?? "",
-    acceptingOnly: sp.get("accepting") === "true",
-    location: sp.get("location") ?? "",
-    page,
-    perPage,
-  });
+  const [
+    { results, total, page: currentPage, perPage: appliedPerPage, totalPages },
+    datasetSize,
+  ] = await Promise.all([
+    searchDentists({
+      state: sp.get("state") ?? "",
+      city: sp.get("city") ?? "",
+      specialty: sp.get("specialty") ?? "",
+      acceptingOnly: sp.get("accepting") === "true",
+      location: sp.get("location") ?? "",
+      page,
+      perPage,
+    }),
+    getTotalDentistCount(),
+  ]);
 
   return Response.json(
     {
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       perPage: appliedPerPage,
       total,
       totalPages,
-      datasetSize: getTotalDentistCount(),
+      datasetSize,
       data: results,
     },
     {

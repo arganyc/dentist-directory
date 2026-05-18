@@ -38,17 +38,18 @@ export default async function DentistsPage(props: PageProps<"/dentists">) {
   const pageParam = parseInt(pickString(sp.page), 10);
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
 
-  const { results, total, totalPages, page: currentPage } = searchDentists({
-    state,
-    city,
-    specialty,
-    acceptingOnly: accepting,
-    location,
-    page,
-    perPage: PER_PAGE,
-  });
-
-  const availableCities = state ? getCitiesForState(state) : [];
+  const [{ results, total, totalPages, page: currentPage }, availableCities] = await Promise.all([
+    searchDentists({
+      state,
+      city,
+      specialty,
+      acceptingOnly: accepting,
+      location,
+      page,
+      perPage: PER_PAGE,
+    }),
+    state ? getCitiesForState(state) : Promise.resolve<string[]>([]),
+  ]);
 
   const summaryParts: string[] = [];
   if (location) summaryParts.push(`matching "${location}"`);

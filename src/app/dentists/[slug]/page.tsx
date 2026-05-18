@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/dentists/[slug]">) {
   const { slug } = await props.params;
-  const d = getDentistBySlug(slug);
+  const d = await getDentistBySlug(slug);
   if (!d) return { title: "Dentist not found" };
   const desc = `${d.name}${d.credentials ? `, ${d.credentials}` : ""} — ${d.specialty} in ${d.address.city}, ${d.address.stateCode}. Contact: ${d.phone}.`;
   return {
@@ -24,7 +24,7 @@ export async function generateMetadata(props: PageProps<"/dentists/[slug]">) {
 
 export default async function DentistProfile(props: PageProps<"/dentists/[slug]">) {
   const { slug } = await props.params;
-  const d = getDentistBySlug(slug);
+  const d = await getDentistBySlug(slug);
   if (!d) notFound();
   const reviews = getReviewsForDentist(d.id, 4);
 

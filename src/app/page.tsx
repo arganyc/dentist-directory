@@ -24,9 +24,11 @@ function formatCount(n: number): string {
   return n.toLocaleString("en-US");
 }
 
-export default function Home() {
-  const featured = getFeaturedDentists(3);
-  const total = getTotalDentistCount();
+export default async function Home() {
+  const [featured, total] = await Promise.all([
+    getFeaturedDentists(3),
+    getTotalDentistCount(),
+  ]);
 
   return (
     <div className="flex flex-1 flex-col bg-white">
