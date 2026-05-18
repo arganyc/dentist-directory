@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "import-dentists": "node scripts/import-dentists.ts"
+    "import-dentists": "node scripts/import-dentists.ts",
+    "build:subset": "node scripts/build-subset.ts"
   },
   "dependencies": {
     "next": "16.2.6",
