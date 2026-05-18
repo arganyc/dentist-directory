@@ -174,6 +174,22 @@ export async function searchDentists(opts: SearchOpts): Promise<SearchResult> {
   };
 }
 
+export type CityCount = { city: string; stateCode: string; total: number };
+
+export async function getTopCities(count: number): Promise<CityCount[]> {
+  const sql = getSql();
+  const rows = (await sql.query(
+    `SELECT city, state_code, COUNT(*)::int AS total
+     FROM dentists
+     WHERE city <> ''
+     GROUP BY city, state_code
+     ORDER BY total DESC, city ASC
+     LIMIT $1`,
+    [count]
+  )) as { city: string; state_code: string; total: number }[];
+  return rows.map((r) => ({ city: r.city, stateCode: r.state_code, total: r.total }));
+}
+
 export async function getFeaturedDentists(count: number): Promise<Dentist[]> {
   const sql = getSql();
   const rows = (await sql.query(

@@ -3,7 +3,7 @@ import HomeSearch from "@/components/HomeSearch";
 import DentistCard from "@/components/DentistCard";
 import Newsletter from "@/components/Newsletter";
 import { allSpecialties } from "@/lib/dentists";
-import { getFeaturedDentists, getTotalDentistCount } from "@/lib/dentists-data";
+import { getFeaturedDentists, getTopCities, getTotalDentistCount } from "@/lib/dentists-data";
 
 export const metadata = {
   title: { absolute: "SmileFinder — Find a Dentist in Your City" },
@@ -25,9 +25,10 @@ function formatCount(n: number): string {
 }
 
 export default async function Home() {
-  const [featured, total] = await Promise.all([
+  const [featured, total, topCities] = await Promise.all([
     getFeaturedDentists(3),
     getTotalDentistCount(),
+    getTopCities(12),
   ]);
 
   return (
@@ -136,6 +137,51 @@ export default async function Home() {
           {featured.map((d) => (
             <DentistCard key={d.id} dentist={d} />
           ))}
+        </div>
+      </section>
+
+      <section className="bg-blue-50/40">
+        <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between">
+            <div>
+              <h2 className="text-3xl font-bold text-slate-900">Popular Cities</h2>
+              <p className="mt-2 text-slate-600">
+                Browse our largest metro dentist directories.
+              </p>
+            </div>
+            <Link
+              href="/dentists"
+              className="hidden text-sm font-semibold text-blue-700 hover:text-blue-800 sm:block"
+            >
+              Browse all cities →
+            </Link>
+          </div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {topCities.map((c) => (
+              <Link
+                key={`${c.stateCode}-${c.city}`}
+                href={`/dentists?state=${c.stateCode}&city=${encodeURIComponent(c.city)}`}
+                className="group flex items-center justify-between rounded-xl border border-blue-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-slate-900 group-hover:text-blue-700">
+                    {c.city}
+                  </p>
+                  <p className="text-xs uppercase tracking-wider text-slate-500">
+                    {c.stateCode}
+                  </p>
+                </div>
+                <div className="ml-3 shrink-0 text-right">
+                  <p className="text-lg font-bold text-blue-700">
+                    {c.total.toLocaleString()}
+                  </p>
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500">
+                    dentists
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
