@@ -19,15 +19,6 @@ export async function generateMetadata() {
   };
 }
 
-const POPULAR_CITIES = [
-  { city: "New York", state: "NY" },
-  { city: "Los Angeles", state: "CA" },
-  { city: "Chicago", state: "IL" },
-  { city: "Houston", state: "TX" },
-  { city: "Phoenix", state: "AZ" },
-  { city: "Boston", state: "MA" },
-];
-
 function formatCount(n: number): string {
   return n.toLocaleString("en-US");
 }
@@ -67,13 +58,13 @@ export default async function Home() {
           <HomeSearch />
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm text-blue-100">
             <span className="opacity-80">Popular:</span>
-            {POPULAR_CITIES.map((c) => (
+            {topCities.slice(0, 6).map((c) => (
               <Link
-                key={`${c.city}-${c.state}`}
-                href={`/dentists?location=${encodeURIComponent(c.city)}`}
+                key={`${c.stateCode}-${c.city}`}
+                href={`/dentists?state=${c.stateCode}&city=${encodeURIComponent(c.city)}`}
                 className="rounded-full bg-white/10 px-3 py-1 text-white ring-1 ring-white/20 transition hover:bg-white/20"
               >
-                {c.city}, {c.state}
+                {c.city}, {c.stateCode}
               </Link>
             ))}
           </div>
