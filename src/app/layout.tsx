@@ -42,6 +42,9 @@ export const metadata: Metadata = {
       "Find the right dentist for you. Browse verified US dentists by city, state, and specialty.",
   },
   robots: { index: true, follow: true },
+  verification: {
+    google: "kW8RL0-67PA5yx1WXf9OGDhAa1y0fj1dqE5KkgvOAVM",
+  },
 };
 
 export default function RootLayout({
