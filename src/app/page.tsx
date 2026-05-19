@@ -5,13 +5,31 @@ import Newsletter from "@/components/Newsletter";
 import { allSpecialties } from "@/lib/dentists";
 import { getFeaturedDentists, getTopCities, getTotalDentistCount } from "@/lib/dentists-data";
 
-// Render at request time so the live DB count is always reflected.
-// Without this, Next.js statically renders the page at build time and the
-// hero count drifts whenever new dentists are added between deploys.
-export const dynamic = "force-dynamic";
+// ISR: regenerate at most once per minute, serve cached HTML in between.
+// This keeps the homepage effectively live (count updates within ~60s of
+// new data) without making every visitor pay for a fresh Neon round-trip
+// — which on free-tier Neon includes occasional ~5-10s cold-starts that
+// can blow Vercel's 10s function timeout. Stale-while-revalidate also
+// means a transient DB failure keeps the previous good page rendering
+// instead of returning a 500.
+export const revalidate = 60;
+
+// Fallback values keep render going if Postgres is briefly unreachable.
+const FALLBACK_TOTAL = 119_566;
+const FALLBACK_FEATURED: never[] = [];
+const FALLBACK_TOP_CITIES: never[] = [];
+
+async function safe<T>(promise: Promise<T>, fallback: T, label: string): Promise<T> {
+  try {
+    return await promise;
+  } catch (err) {
+    console.error(`[homepage] ${label} failed, using fallback:`, err);
+    return fallback;
+  }
+}
 
 export async function generateMetadata() {
-  const total = await getTotalDentistCount();
+  const total = await safe(getTotalDentistCount(), FALLBACK_TOTAL, "getTotalDentistCount (metadata)");
   const formatted = total.toLocaleString("en-US");
   return {
     title: { absolute: "SmileFinder — Find a Dentist in Your City" },
@@ -25,9 +43,9 @@ function formatCount(n: number): string {
 
 export default async function Home() {
   const [featured, total, topCities] = await Promise.all([
-    getFeaturedDentists(3),
-    getTotalDentistCount(),
-    getTopCities(12),
+    safe(getFeaturedDentists(3), FALLBACK_FEATURED, "getFeaturedDentists"),
+    safe(getTotalDentistCount(), FALLBACK_TOTAL, "getTotalDentistCount"),
+    safe(getTopCities(12), FALLBACK_TOP_CITIES, "getTopCities"),
   ]);
 
   return (
