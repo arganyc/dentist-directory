@@ -65,7 +65,7 @@ export default function ClaimForm() {
         <h2 className="mt-5 text-2xl font-bold text-slate-900">Submission received</h2>
         <p className="mt-2 text-slate-700">
           Thanks — we'll verify your information and reach out within one business day. Watch for an
-          email from <span className="font-semibold">verify@smilefinder.example</span>.
+          email from <span className="font-semibold">admin@usdentistsdirectory.com</span>.
         </p>
         <button
           type="button"
