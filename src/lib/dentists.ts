@@ -42,6 +42,7 @@ export type Dentist = {
   languages: string[];
   insurance: string[];
   hours: { day: string; hours: string }[];
+  isPremium: boolean;
 };
 
 export const allSpecialties: Specialty[] = [

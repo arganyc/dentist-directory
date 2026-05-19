@@ -6,12 +6,43 @@ type Status = "idle" | "submitting" | "success" | "error";
 
 export default function ClaimForm() {
   const [status, setStatus] = useState<Status>("idle");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus("submitting");
-    await new Promise((r) => setTimeout(r, 700));
-    setStatus("success");
+    setErrorMessage("");
+
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const payload = {
+      name: fd.get("name"),
+      email: fd.get("email"),
+      phone: fd.get("phone"),
+      npi: fd.get("npi"),
+      practiceName: fd.get("practiceName"),
+      address: fd.get("address"),
+      website: fd.get("website") || "",
+      message: fd.get("message") || "",
+    };
+
+    try {
+      const res = await fetch("/api/claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json()) as { ok: boolean; error?: string };
+      if (!res.ok || !data.ok) {
+        setErrorMessage(data.error || `Submission failed (HTTP ${res.status})`);
+        setStatus("error");
+        return;
+      }
+      setStatus("success");
+    } catch {
+      setErrorMessage("Network error — please try again");
+      setStatus("error");
+    }
   }
 
   if (status === "success") {
@@ -52,6 +83,15 @@ export default function ClaimForm() {
       onSubmit={handleSubmit}
       className="space-y-5 rounded-2xl border border-blue-100 bg-white p-6 shadow-sm sm:p-8"
     >
+      {status === "error" && errorMessage && (
+        <div
+          role="alert"
+          className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+        >
+          <span className="font-semibold">Submission failed:</span> {errorMessage}
+        </div>
+      )}
+
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Your Name" name="name" placeholder="Dr. Jane Smith" required />
         <Field label="Email" name="email" type="email" placeholder="you@practice.com" required />

@@ -19,6 +19,7 @@ type Row = {
   review_count: number;
   accepting_new_patients: boolean;
   years_experience: number;
+  is_premium: boolean;
 };
 
 function rowToDentist(r: Row): Dentist {
@@ -48,11 +49,12 @@ function rowToDentist(r: Row): Dentist {
     languages: [],
     insurance: [],
     hours: [],
+    isPremium: r.is_premium,
   };
 }
 
 const ALL_COLS =
-  "id, slug, name, credentials, specialty, practice_name, street, city, state, state_code, zip, phone, rating, review_count, accepting_new_patients, years_experience";
+  "id, slug, name, credentials, specialty, practice_name, street, city, state, state_code, zip, phone, rating, review_count, accepting_new_patients, years_experience, is_premium";
 
 export async function getTotalDentistCount(): Promise<number> {
   const sql = getSql();

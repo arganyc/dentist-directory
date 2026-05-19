@@ -1,0 +1,25 @@
+# Default: detect text files and normalize line endings to LF on commit.
+# Working trees keep platform-native endings (Git auto-converts on checkout).
+* text=auto eol=lf
+
+# Explicit overrides for known binary file types — never normalize.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+*.zip   binary
+*.gz    binary
+*.tar   binary
+
+# Shell scripts must always be LF, even on Windows checkouts.
+*.sh text eol=lf
+
+# Windows-specific files keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf

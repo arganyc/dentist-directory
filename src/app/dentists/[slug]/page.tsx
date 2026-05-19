@@ -1,8 +1,51 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Rating from "@/components/Rating";
+import { type Dentist } from "@/lib/dentists";
 import { getDentistBySlug } from "@/lib/dentists-data";
 import { getReviewsForDentist } from "@/lib/reviews";
+
+const SITE_URL = "https://usdentistsdirectory.com";
+
+function buildJsonLd(d: Dentist): Record<string, unknown> {
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Dentist",
+    "@id": `${SITE_URL}/dentists/${d.slug}`,
+    url: `${SITE_URL}/dentists/${d.slug}`,
+    name: d.practiceName || d.name,
+    description: `${d.name}${d.credentials ? `, ${d.credentials}` : ""} — ${d.specialty} in ${d.address.city}, ${d.address.stateCode}`,
+    medicalSpecialty: d.specialty,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: d.address.street || undefined,
+      addressLocality: d.address.city || undefined,
+      addressRegion: d.address.stateCode || undefined,
+      postalCode: d.address.zip || undefined,
+      addressCountry: "US",
+    },
+  };
+  if (d.phone) schema.telephone = d.phone;
+  if (d.website) {
+    schema.sameAs = d.website.startsWith("http") ? d.website : `https://${d.website}`;
+  }
+  if (d.reviewCount > 0) {
+    schema.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: d.rating,
+      reviewCount: d.reviewCount,
+      bestRating: 5,
+      worstRating: 1,
+    };
+  }
+  // Provider identifier from NPI (helps disambiguation in the knowledge graph)
+  schema.identifier = {
+    "@type": "PropertyValue",
+    propertyID: "NPI",
+    value: d.id,
+  };
+  return schema;
+}
 
 export const dynamic = "force-dynamic";
 
@@ -37,8 +80,16 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
     .join("")
     .toUpperCase();
 
+  const jsonLd = buildJsonLd(d);
+
   return (
     <div className="bg-slate-50">
+      <script
+        type="application/ld+json"
+        // Stringify and strip "<" to avoid any chance of an XSS escape via injected JSON.
+        // The dentist data comes from our own DB, but defense-in-depth is cheap.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       <div className="bg-gradient-to-br from-blue-600 to-blue-800 pb-16 pt-10 text-white">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <nav className="text-sm text-blue-100">
@@ -196,14 +247,14 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
                     </dt>
                     <dd className="mt-1">
                       {/*
-                        rel="nofollow" because every listing is currently Free tier.
-                        When paid subscriptions ship, switch this to "noopener noreferrer"
-                        only (drop "nofollow") for Professional / Premium subscribers.
+                        Premium subscribers get do-follow outbound links (SEO juice
+                        they're paying for). Free listings keep rel="nofollow" so we
+                        don't hand out link equity for free.
                       */}
                       <a
                         href={d.website.startsWith("http") ? d.website : `https://${d.website}`}
                         target="_blank"
-                        rel="nofollow noopener noreferrer"
+                        rel={d.isPremium ? "noopener noreferrer" : "nofollow noopener noreferrer"}
                         className="break-all font-semibold text-blue-700 hover:underline"
                       >
                         {d.website.replace(/^https?:\/\//, "")}

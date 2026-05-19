@@ -290,9 +290,31 @@ async function main(): Promise<void> {
       rating                  NUMERIC(2,1) NOT NULL,
       review_count            INT NOT NULL,
       accepting_new_patients  BOOLEAN NOT NULL,
-      years_experience        INT NOT NULL
+      years_experience        INT NOT NULL,
+      is_premium              BOOLEAN NOT NULL DEFAULT FALSE
     )
   `;
+  // ADD COLUMN IF NOT EXISTS covers the case where the table already existed
+  // before is_premium was introduced — running migrate on an older DB.
+  await sql`ALTER TABLE dentists ADD COLUMN IF NOT EXISTS is_premium BOOLEAN NOT NULL DEFAULT FALSE`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS claims (
+      id              SERIAL PRIMARY KEY,
+      name            TEXT NOT NULL,
+      email           TEXT NOT NULL,
+      phone           TEXT NOT NULL,
+      npi             TEXT NOT NULL,
+      practice_name   TEXT NOT NULL,
+      address         TEXT NOT NULL,
+      website         TEXT,
+      message         TEXT,
+      status          TEXT NOT NULL DEFAULT 'pending',
+      created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS idx_claims_created_at ON claims(created_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_claims_status ON claims(status)`;
+
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_state_code ON dentists(state_code)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_state_city ON dentists(state_code, city)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_specialty ON dentists(specialty)`;
