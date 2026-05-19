@@ -75,6 +75,14 @@ export default function ClaimForm() {
         required
       />
 
+      <Field
+        label="Website"
+        name="website"
+        type="url"
+        placeholder="https://yourpractice.com"
+        hint="Optional — shown as a link on your profile. Free listings get rel=&quot;nofollow&quot;; upgrade to remove."
+      />
+
       <div>
         <label className="block text-sm font-semibold text-slate-800">
           Message <span className="font-normal text-slate-500">(optional)</span>

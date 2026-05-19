@@ -189,6 +189,28 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
                     </dd>
                   </div>
                 )}
+                {d.website && (
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Website
+                    </dt>
+                    <dd className="mt-1">
+                      {/*
+                        rel="nofollow" because every listing is currently Free tier.
+                        When paid subscriptions ship, switch this to "noopener noreferrer"
+                        only (drop "nofollow") for Professional / Premium subscribers.
+                      */}
+                      <a
+                        href={d.website.startsWith("http") ? d.website : `https://${d.website}`}
+                        target="_blank"
+                        rel="nofollow noopener noreferrer"
+                        className="break-all font-semibold text-blue-700 hover:underline"
+                      >
+                        {d.website.replace(/^https?:\/\//, "")}
+                      </a>
+                    </dd>
+                  </div>
+                )}
               </dl>
               {d.phone && (
                 <a
