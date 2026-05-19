@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { getSql } from "@/lib/db";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "arganyc@gmail.com";
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "claims@usdentistsdirectory.com";
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "admin@usdentistsdirectory.com";
 
 type ClaimInput = {
   name: string;
