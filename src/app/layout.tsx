@@ -42,9 +42,6 @@ export const metadata: Metadata = {
       "Find the right dentist for you. Browse verified US dentists by city, state, and specialty.",
   },
   robots: { index: true, follow: true },
-  verification: {
-    google: "kW8RL0-67PA5yx1WXf9OGDhAa1y0fj1dqE5KkgvOAVM",
-  },
 };
 
 export default function RootLayout({
@@ -54,6 +51,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
+      <head>
+        <meta
+          name="google-site-verification"
+          content="kW8RL0-67PA5yx1WXf9OGDhAa1y0fj1dqE5KkgvOAVM"
+        />
+      </head>
       <body className="flex min-h-full flex-col bg-white text-slate-900">
         <Navbar />
         <main className="flex flex-1 flex-col">{children}</main>
