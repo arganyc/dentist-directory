@@ -73,7 +73,7 @@ export default function ForDentistsPage() {
                 For Dental Practices
               </span>
               <h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
-                Fill your chairs with the right patients.
+                We help dentists control their online profile and get found by local patients.
               </h1>
               <p className="mt-5 text-lg text-blue-100">
                 SmileFinder connects you with thousands of patients searching for a dentist in your

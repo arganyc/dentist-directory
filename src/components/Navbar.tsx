@@ -49,6 +49,12 @@ export default function Navbar() {
             For Dentists
           </Link>
           <Link
+            href="/for-dentists"
+            className="hidden rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 lg:inline-block"
+          >
+            List your practice
+          </Link>
+          <Link
             href="/pricing"
             className="hidden rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 md:inline-block"
           >
