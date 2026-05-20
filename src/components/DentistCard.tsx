@@ -35,6 +35,9 @@ function profileCompletion(d: Dentist): number {
 
 export default function DentistCard({ dentist }: { dentist: Dentist }) {
   const claimHref = `/claim?practice=${encodeURIComponent(dentist.slug)}`;
+  // Real reviews only show for claimed (Premium) listings with non-zero
+  // review count. Everything else gets the empty-state placeholder.
+  const showRealRating = dentist.isPremium && dentist.reviewCount > 0;
 
   return (
     <div className="group block overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg">
@@ -69,8 +72,32 @@ export default function DentistCard({ dentist }: { dentist: Dentist }) {
             <p className="mt-1 text-sm text-slate-500">
               {dentist.address.city}, {dentist.address.stateCode} · {dentist.phone}
             </p>
-            <div className="mt-3">
-              <Rating value={dentist.rating} count={dentist.reviewCount} />
+            <div className="mt-3 min-h-[38px]">
+              {showRealRating ? (
+                <Rating value={dentist.rating} count={dentist.reviewCount} />
+              ) : (
+                <div>
+                  <div className="flex" aria-label="No reviews yet — listing not yet claimed">
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <svg
+                        key={i}
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        stroke="#CBD5E1"
+                        strokeWidth="1.5"
+                        strokeLinejoin="round"
+                        className="h-4 w-4"
+                        aria-hidden
+                      >
+                        <path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L10 14.9 4.8 17.6l1-5.8L1.5 7.7l5.9-.9z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    Reviews shown after claiming
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
