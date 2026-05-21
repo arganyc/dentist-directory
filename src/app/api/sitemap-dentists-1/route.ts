@@ -11,7 +11,7 @@ export async function GET() {
     ORDER BY id
     LIMIT 50000 OFFSET 0
   `
-  const urls = dentists.map((d: { slug: string }) => `
+  const urls = (dentists as { slug: string }[]).map((d) => `
   <url>
     <loc>${base}/dentists/${d.slug}</loc>
     <changefreq>monthly</changefreq>
