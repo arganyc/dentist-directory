@@ -54,7 +54,7 @@ export function middleware(request: NextRequest) {
 
   if (pathSegments[0] === "dentists" && pathSegments.length >= 2) {
     const stateSegment = pathSegments[1];
-    if (stateSegment === "state") {
+    if (stateSegment === "state" || /^[a-z0-9-]+-\d{10}$/i.test(stateSegment)) {
       return NextResponse.next();
     }
 
