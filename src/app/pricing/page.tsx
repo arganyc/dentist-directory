@@ -42,6 +42,7 @@ const tiers: Tier[] = [
     period: "per month",
     tagline: "Stand out and convert more visitors into patients.",
     cta: "Start Professional",
+    link: "https://buy.stripe.com/6oU14meqt6KbellfqMaZi00",
     featured: true,
     features: [
       { included: true, text: "Everything in Basic" },
