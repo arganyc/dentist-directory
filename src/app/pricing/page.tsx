@@ -1,30 +1,16 @@
-import Link from "next/link";
+"use client";
+import { useState } from "react";
 
-export const metadata = {
-  title: "Pricing — List Your Dental Practice",
-  description:
-    "Choose a SmileFinder listing tier for your dental practice. Basic listings are free. Professional ($29/mo) and Premium ($79/mo) plans unlock featured placement, lead capture, and analytics.",
-};
-
-type Tier = {
-  name: string;
-  price: string;
-  period: string;
-  tagline: string;
-  cta: string;
-  link: string;
-  featured?: boolean;
-  features: { included: boolean; text: string }[];
-};
-
-const tiers: Tier[] = [
+const tiers = [
   {
     name: "Basic",
-    price: "Free",
+    monthlyPrice: "Free",
+    annualPrice: "Free",
     period: "forever",
-    tagline: "Get found on SmileFinder at no cost.",
+    tagline: "Get found on USDentistsDirectory at no cost.",
     cta: "Claim Your Listing",
-    link: "/claim",
+    monthlyLink: "/claim",
+    annualLink: "/claim",
     features: [
       { included: true, text: "Standard directory listing" },
       { included: true, text: "Practice name, address, phone" },
@@ -38,12 +24,14 @@ const tiers: Tier[] = [
   },
   {
     name: "Professional",
-    price: "$29",
-    period: "per month",
+    monthlyPrice: "$29",
+    annualPrice: "$279",
+    period: "month",
     tagline: "Stand out and convert more visitors into patients.",
     cta: "Start Professional",
-    link: "https://buy.stripe.com/6oU14meqt6KbelLfqMaZi00",
     featured: true,
+    monthlyLink: "https://buy.stripe.com/6oU14meqt6KbelLfqMaZi00",
+    annualLink: "https://buy.stripe.com/8x27sK5TX1pR91r3I4aZi02",
     features: [
       { included: true, text: "Everything in Basic" },
       { included: true, text: "Featured placement in city results" },
@@ -56,12 +44,14 @@ const tiers: Tier[] = [
     ],
   },
   {
-    name: "Premium",
-    price: "$79",
-    period: "per month",
+    name: "Premium Plus",
+    monthlyPrice: "$79",
+    annualPrice: "$759",
+    period: "month",
     tagline: "Maximum visibility across our entire directory.",
     cta: "Go Premium Plus",
-    link: "https://buy.stripe.com/bJe00i2HL0lN5Pf4M8aZi03",
+    monthlyLink: "https://buy.stripe.com/bJe00i2HL0lN5Pf4M8aZi03",
+    annualLink: "https://buy.stripe.com/3cIbJ0gyBecD5PfdiEaZi04",
     features: [
       { included: true, text: "Everything in Professional" },
       { included: true, text: "Top-of-page premium placement" },
@@ -77,35 +67,23 @@ const tiers: Tier[] = [
 
 function Check() {
   return (
-    <svg
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      className="h-5 w-5 shrink-0 text-blue-600"
-      aria-hidden
-    >
-      <path
-        fillRule="evenodd"
-        d="M16.7 5.3a1 1 0 010 1.4l-7.4 7.4a1 1 0 01-1.4 0L3.3 9.5A1 1 0 014.7 8.1L8.6 12 15.3 5.3a1 1 0 011.4 0z"
-        clipRule="evenodd"
-      />
+    <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 shrink-0 text-blue-600" aria-hidden>
+      <path fillRule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7.4 7.4a1 1 0 01-1.4 0L3.3 9.5A1 1 0 014.7 8.1L8.6 12 15.3 5.3a1 1 0 011.4 0z" clipRule="evenodd" />
     </svg>
   );
 }
 
 function Dash() {
   return (
-    <svg
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      className="h-5 w-5 shrink-0 text-slate-300"
-      aria-hidden
-    >
+    <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 shrink-0 text-slate-300" aria-hidden>
       <path fillRule="evenodd" d="M4 10a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1z" clipRule="evenodd" />
     </svg>
   );
 }
 
 export default function PricingPage() {
+  const [annual, setAnnual] = useState(false);
+
   return (
     <div className="bg-slate-50">
       <section className="border-b border-blue-100 bg-gradient-to-br from-blue-600 to-blue-800 py-16 text-white">
@@ -117,8 +95,22 @@ export default function PricingPage() {
             Simple, transparent pricing
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-blue-100">
-            Start free. Upgrade when you're ready to grow. No long-term contracts — cancel anytime.
+            Start free. Upgrade when you&apos;re ready to grow. No long-term contracts — cancel anytime.
           </p>
+          <div className="mt-6 inline-flex items-center gap-1 rounded-full bg-white/15 p-1 ring-1 ring-white/20">
+            <button
+              onClick={() => setAnnual(false)}
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition ${!annual ? "bg-white text-blue-700 shadow" : "text-white hover:bg-white/10"}`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setAnnual(true)}
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition ${annual ? "bg-white text-blue-700 shadow" : "text-white hover:bg-white/10"}`}
+            >
+              Annual <span className="ml-1 rounded-full bg-emerald-500 px-2 py-0.5 text-xs text-white">Save 20%</span>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -127,11 +119,7 @@ export default function PricingPage() {
           {tiers.map((t) => (
             <div
               key={t.name}
-              className={`relative flex flex-col rounded-2xl border bg-white p-8 shadow-sm ${
-                t.featured
-                  ? "border-blue-600 shadow-xl ring-2 ring-blue-600"
-                  : "border-blue-100"
-              }`}
+              className={`relative flex flex-col rounded-2xl border bg-white p-8 shadow-sm ${t.featured ? "border-blue-600 shadow-xl ring-2 ring-blue-600" : "border-blue-100"}`}
             >
               {t.featured && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow">
@@ -141,26 +129,32 @@ export default function PricingPage() {
               <h2 className="text-2xl font-bold text-slate-900">{t.name}</h2>
               <p className="mt-2 text-sm text-slate-600">{t.tagline}</p>
               <div className="mt-6 flex items-baseline gap-2">
-                <span className="text-5xl font-extrabold text-slate-900">{t.price}</span>
-                <span className="text-sm text-slate-500">/ {t.period}</span>
+                <span className="text-5xl font-extrabold text-slate-900">
+                  {annual ? t.annualPrice : t.monthlyPrice}
+                </span>
+                {t.name !== "Basic" && (
+                  <span className="text-sm text-slate-500">/ {annual ? "year" : t.period}</span>
+                )}
+                {t.name === "Basic" && (
+                  <span className="text-sm text-slate-500">/ {t.period}</span>
+                )}
               </div>
-              <Link
-                href={t.link}
-                className={`mt-6 block rounded-lg px-4 py-3 text-center text-sm font-semibold shadow-sm transition ${
-                  t.featured
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-blue-50 text-blue-700 hover:bg-blue-100"
-                }`}
+              {annual && t.name !== "Basic" && (
+                <p className="mt-1 text-xs text-emerald-600 font-semibold">Save 20% vs monthly</p>
+              )}
+               <a
+                href={annual ? t.annualLink : t.monthlyLink}
+                target={t.name !== "Basic" ? "_blank" : undefined}
+                rel={t.name !== "Basic" ? "noopener noreferrer" : undefined}
+                className={`mt-6 block rounded-lg px-4 py-3 text-center text-sm font-semibold shadow-sm transition ${t.featured ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-blue-50 text-blue-700 hover:bg-blue-100"}`}
               >
                 {t.cta}
-              </Link>
+              </a>
               <ul className="mt-8 space-y-3">
                 {t.features.map((f) => (
                   <li key={f.text} className="flex items-start gap-3 text-sm">
                     {f.included ? <Check /> : <Dash />}
-                    <span className={f.included ? "text-slate-700" : "text-slate-400"}>
-                      {f.text}
-                    </span>
+                    <span className={f.included ? "text-slate-700" : "text-slate-400"}>{f.text}</span>
                   </li>
                 ))}
               </ul>
@@ -169,32 +163,16 @@ export default function PricingPage() {
         </div>
 
         <div className="mx-auto mt-16 max-w-3xl">
-          <h2 className="text-center text-2xl font-bold text-slate-900">
-            Frequently asked questions
-          </h2>
+          <h2 className="text-center text-2xl font-bold text-slate-900">Frequently asked questions</h2>
           <dl className="mt-8 space-y-6">
             {[
-              {
-                q: "Can I cancel anytime?",
-                a: "Yes. Paid plans are month-to-month. Cancel and your listing reverts to the Basic tier — your profile stays online, you just lose paid features.",
-              },
-              {
-                q: "Do you charge per lead?",
-                a: "No. We're a flat monthly subscription, never per-lead or per-click. The leads your listing generates are yours.",
-              },
-              {
-                q: "How fast does my listing go live?",
-                a: "Once submitted, listings are typically reviewed and published within one business day.",
-              },
-              {
-                q: "Can I list multiple practice locations?",
-                a: "Yes. Premium subscriptions include up to three locations. Contact us for multi-location practices with more than three offices.",
-              },
+              { q: "Can I cancel anytime?", a: "Yes. Paid plans are month-to-month. Cancel and your listing reverts to the Basic tier — your profile stays online, you just lose paid features." },
+              { q: "Do you charge per lead?", a: "No. We're a flat monthly subscription, never per-lead or per-click. The leads your listing generates are yours." },
+              { q: "How fast does my listing go live?", a: "Once submitted, listings are typically reviewed and published within one business day." },
+              { q: "Can I list multiple practice locations?", a: "Yes. Premium subscriptions include up to three locations. Contact us for multi-location practices with more than three offices." },
+              { q: "Is there a free trial?", a: "Yes! Professional and Premium Plus monthly plans include a 30-day free trial. No charge until the trial ends — cancel anytime." },
             ].map((item) => (
-              <div
-                key={item.q}
-                className="rounded-xl border border-blue-100 bg-white p-5 shadow-sm"
-              >
+              <div key={item.q} className="rounded-xl border border-blue-100 bg-white p-5 shadow-sm">
                 <dt className="font-semibold text-slate-900">{item.q}</dt>
                 <dd className="mt-2 text-sm leading-relaxed text-slate-700">{item.a}</dd>
               </div>
