@@ -293,9 +293,9 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
               <h2 className="text-base font-bold">Upgrade to Premium</h2>
               <p className="mt-2 text-sm text-amber-50">Get priority placement, more patient leads, and analytics.</p>
               <div className="mt-4 space-y-2">
-                <a href="https://buy.stripe.com/6oU14meqt6KbellfqMaZi00" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white px-4 py-2 text-center text-sm font-semibold text-orange-600 hover:bg-amber-50">⭐ Professional — $29/mo</a>
+                <a href="https://buy.stripe.com/6oU14meqt6KbelLfqMaZi00" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white px-4 py-2 text-center text-sm font-semibold text-orange-600 hover:bg-amber-50">⭐ Professional — $29/mo</a>
                 <a href="https://buy.stripe.com/8x27sK5TX1pR91r3I4aZi02" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white/20 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-white/30">⭐ Professional — $279/yr</a>
-                <a href="https://buy.stripe.com/dR614meqt6KbellfqMaZi01" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white px-4 py-2 text-center text-sm font-semibold text-orange-600 hover:bg-amber-50">👑 Premium Plus — $79/mo</a>
+                <a href="https://buy.stripe.com/bJe00i2HL0lN5Pf4M8aZi03" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white px-4 py-2 text-center text-sm font-semibold text-orange-600 hover:bg-amber-50">👑 Premium Plus — $79/mo</a>
                 <a href="https://buy.stripe.com/3cIbJ0gyBecD5PfdiEaZi04" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white/20 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-white/30">👑 Premium Plus — $759/yr</a>
               </div>
             </div>

@@ -42,7 +42,7 @@ const tiers: Tier[] = [
     period: "per month",
     tagline: "Stand out and convert more visitors into patients.",
     cta: "Start Professional",
-    link: "https://buy.stripe.com/6oU14meqt6KbellfqMaZi00",
+    link: "https://buy.stripe.com/6oU14meqt6KbelLfqMaZi00",
     featured: true,
     features: [
       { included: true, text: "Everything in Basic" },
@@ -61,7 +61,7 @@ const tiers: Tier[] = [
     period: "per month",
     tagline: "Maximum visibility across our entire directory.",
     cta: "Go Premium Plus",
-    link: "https://buy.stripe.com/dR614meqt6KbellfqMaZi01",
+    link: "https://buy.stripe.com/bJe00i2HL0lN5Pf4M8aZi03",
     features: [
       { included: true, text: "Everything in Professional" },
       { included: true, text: "Top-of-page premium placement" },
