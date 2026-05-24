@@ -22,7 +22,7 @@ const tiers: Tier[] = [
     price: "Free",
     period: "forever",
     tagline: "Get found on SmileFinder at no cost.",
-    cta: "Claim Your Listing",
+    cta: "Claim Your Listing",\n    link: "/claim",
     features: [
       { included: true, text: "Standard directory listing" },
       { included: true, text: "Practice name, address, phone" },
@@ -57,7 +57,7 @@ const tiers: Tier[] = [
     price: "$79",
     period: "per month",
     tagline: "Maximum visibility across our entire directory.",
-    cta: "Go Premium",
+    cta: "Go Premium Plus",\n    link: "https://buy.stripe.com/dR614meqt6KbellfqMaZi01",
     features: [
       { included: true, text: "Everything in Professional" },
       { included: true, text: "Top-of-page premium placement" },
@@ -141,7 +141,7 @@ export default function PricingPage() {
                 <span className="text-sm text-slate-500">/ {t.period}</span>
               </div>
               <Link
-                href="/claim"
+                href={t.link}
                 className={`mt-6 block rounded-lg px-4 py-3 text-center text-sm font-semibold shadow-sm transition ${
                   t.featured
                     ? "bg-blue-600 text-white hover:bg-blue-700"
