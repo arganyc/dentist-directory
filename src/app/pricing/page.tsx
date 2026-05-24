@@ -24,7 +24,8 @@ const tiers: Tier[] = [
     price: "Free",
     period: "forever",
     tagline: "Get found on SmileFinder at no cost.",
-    cta: "Claim Your Listing",\n    link: "/claim",
+    cta: "Claim Your Listing",
+    link: "/claim",
     features: [
       { included: true, text: "Standard directory listing" },
       { included: true, text: "Practice name, address, phone" },
@@ -59,7 +60,8 @@ const tiers: Tier[] = [
     price: "$79",
     period: "per month",
     tagline: "Maximum visibility across our entire directory.",
-    cta: "Go Premium Plus",\n    link: "https://buy.stripe.com/dR614meqt6KbellfqMaZi01",
+    cta: "Go Premium Plus",
+    link: "https://buy.stripe.com/dR614meqt6KbellfqMaZi01",
     features: [
       { included: true, text: "Everything in Professional" },
       { included: true, text: "Top-of-page premium placement" },
