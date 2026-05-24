@@ -13,6 +13,7 @@ type Tier = {
   tagline: string;
   cta: string;
   link: string;
+  link: string;
   featured?: boolean;
   features: { included: boolean; text: string }[];
 };
