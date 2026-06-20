@@ -58,6 +58,34 @@ const blogSlugs = [
   'tmj-jaw-pain-treatment',
   'sleep-apnea-dental-treatment',
   'dental-bridges-explained',
+  // Wave 3 – DMV neighborhood guides
+  'dentist-mclean-va',
+  'dentist-tysons-va',
+  'dentist-chevy-chase-md',
+  'dentist-potomac-md',
+  'dentist-gaithersburg-md',
+  'dentist-columbia-md',
+  'dentist-annapolis-md',
+  'dentist-falls-church-va',
+  'dentist-vienna-va',
+  'dentist-woodbridge-va',
+  // Wave 3 – city guides
+  'best-dentists-san-diego',
+  'best-dentists-portland',
+  'best-dentists-minneapolis',
+  'best-dentists-tampa',
+  'best-dentists-austin',
+  'best-dentists-raleigh',
+  'best-dentists-pittsburgh',
+  'best-dentists-richmond-va',
+  'best-dentists-san-antonio',
+  'best-dentists-columbus-ohio',
+  // Wave 3 – topic articles
+  'dental-care-during-pregnancy',
+  'seniors-dental-care-guide',
+  'porcelain-veneers-complete-guide',
+  'fluoride-treatment-adults',
+  'how-to-read-your-dental-xrays',
 ]
 
 export async function GET() {
