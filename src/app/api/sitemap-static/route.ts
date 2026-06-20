@@ -151,6 +151,38 @@ const blogSlugs = [
   'types-of-braces-comparison',
   'oil-pulling-dental-truth',
   'how-to-choose-toothpaste',
+  // Wave 7 – "near me" articles
+  'find-a-dentist-near-me',
+  'emergency-dentist-near-me',
+  // Wave 7 – NYC neighborhood guides
+  'best-dentists-manhattan-nyc',
+  'best-dentists-brooklyn-nyc',
+  'best-dentists-queens-nyc',
+  // Wave 7 – LA neighborhood guides
+  'best-dentists-beverly-hills-ca',
+  'best-dentists-santa-monica-ca',
+  'best-dentists-pasadena-ca',
+  // Wave 7 – Chicago suburb guides
+  'best-dentists-evanston-il',
+  'best-dentists-naperville-il',
+  'best-dentists-oak-park-il',
+  // Wave 7 – Houston suburb guides
+  'best-dentists-the-woodlands-tx',
+  'best-dentists-sugar-land-tx',
+  'best-dentists-katy-tx',
+  // Wave 7 – Dallas suburb guides
+  'best-dentists-plano-tx',
+  'best-dentists-frisco-tx',
+  // Wave 7 – Phoenix suburb guides
+  'best-dentists-scottsdale-az',
+  'best-dentists-chandler-gilbert-az',
+  // Wave 7 – Atlanta suburb guides
+  'best-dentists-alpharetta-ga',
+  'best-dentists-marietta-ga',
+  // Wave 7 – Boston neighborhood guides
+  'best-dentists-cambridge-ma',
+  'best-dentists-brookline-ma',
+  'best-dentists-newton-ma',
 ]
 
 export async function GET() {
