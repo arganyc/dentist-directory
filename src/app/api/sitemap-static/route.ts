@@ -129,6 +129,28 @@ const blogSlugs = [
   'what-is-a-deep-cleaning-dental',
   'wisdom-teeth-removal-cost',
   'dental-bonding-vs-veneers',
+  // Wave 6 – city guides
+  'best-dentists-el-paso',
+  'best-dentists-birmingham',
+  'best-dentists-baton-rouge',
+  'best-dentists-knoxville',
+  'best-dentists-albuquerque',
+  'best-dentists-omaha',
+  'best-dentists-buffalo',
+  'best-dentists-hartford',
+  'best-dentists-fresno',
+  'best-dentists-little-rock',
+  // Wave 6 – procedure & topic articles
+  'what-causes-cavities',
+  'can-you-reverse-gum-disease',
+  'tooth-extraction-cost-guide',
+  'oral-cancer-early-signs',
+  'electric-vs-manual-toothbrush',
+  'waterpik-vs-flossing',
+  'zoom-teeth-whitening-guide',
+  'types-of-braces-comparison',
+  'oil-pulling-dental-truth',
+  'how-to-choose-toothpaste',
 ]
 
 export async function GET() {
