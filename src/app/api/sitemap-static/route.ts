@@ -86,6 +86,31 @@ const blogSlugs = [
   'porcelain-veneers-complete-guide',
   'fluoride-treatment-adults',
   'how-to-read-your-dental-xrays',
+  // Wave 4 – DMV neighborhood guides
+  'dentist-germantown-md',
+  'dentist-herndon-va',
+  'dentist-manassas-va',
+  'dentist-leesburg-va',
+  'dentist-laurel-md',
+  'dentist-bowie-md',
+  'dentist-college-park-md',
+  'dentist-upper-marlboro-md',
+  // Wave 4 – city guides
+  'best-dentists-sacramento',
+  'best-dentists-detroit',
+  'best-dentists-st-louis',
+  'best-dentists-san-jose',
+  'best-dentists-indianapolis',
+  'best-dentists-jacksonville',
+  'best-dentists-salt-lake-city',
+  'best-dentists-kansas-city',
+  // Wave 4 – topic articles
+  'emergency-tooth-pain-at-night',
+  'cost-of-braces-complete-guide',
+  'tooth-sensitivity-complete-guide',
+  'bad-breath-causes-and-treatment',
+  'dental-care-for-diabetics',
+  'how-long-does-a-filling-take',
 ]
 
 export async function GET() {
