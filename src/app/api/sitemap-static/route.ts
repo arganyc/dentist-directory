@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server'
 
 const blogSlugs = [
+  // Original articles
   'how-often-should-you-see-a-dentist',
   'invisalign-vs-braces',
   'what-to-do-dental-emergency',
+  // Wave 1 – DMV + national topics
   'best-dentists-washington-dc',
   'dentists-northern-virginia',
   'dental-care-maryland',
@@ -14,6 +16,7 @@ const blogSlugs = [
   'dental-insurance-explained',
   'wisdom-teeth-removal-guide',
   'gum-disease-signs-treatment',
+  // Wave 1 – major cities + high-value topics
   'best-dentists-baltimore',
   'best-dentists-philadelphia',
   'best-dentists-new-york-city',
@@ -29,6 +32,32 @@ const blogSlugs = [
   'children-first-dental-visit',
   'veneers-vs-bonding',
   'cost-of-dental-implants-us',
+  // Wave 2 – more cities
+  'best-dentists-seattle',
+  'best-dentists-phoenix',
+  'best-dentists-denver',
+  'best-dentists-san-francisco',
+  'best-dentists-las-vegas',
+  'best-dentists-charlotte',
+  'best-dentists-nashville',
+  'best-dentists-orlando',
+  // Wave 2 – DMV neighborhood guides
+  'dentist-bethesda-md',
+  'dentist-arlington-va',
+  'dentist-alexandria-va',
+  'dentist-rockville-md',
+  'dentist-silver-spring-md',
+  'dentist-fairfax-va',
+  'dentist-reston-va',
+  // Wave 2 – procedure articles
+  'dental-crowns-complete-guide',
+  'tooth-extraction-what-to-expect',
+  'invisalign-cost-and-process',
+  'teeth-grinding-bruxism',
+  'dental-sealants-guide',
+  'tmj-jaw-pain-treatment',
+  'sleep-apnea-dental-treatment',
+  'dental-bridges-explained',
 ]
 
 export async function GET() {
