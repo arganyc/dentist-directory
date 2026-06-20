@@ -111,6 +111,24 @@ const blogSlugs = [
   'bad-breath-causes-and-treatment',
   'dental-care-for-diabetics',
   'how-long-does-a-filling-take',
+  // Wave 5 – city guides
+  'best-dentists-milwaukee',
+  'best-dentists-memphis',
+  'best-dentists-louisville',
+  'best-dentists-cincinnati',
+  'best-dentists-new-orleans',
+  'best-dentists-cleveland',
+  'best-dentists-oklahoma-city',
+  'best-dentists-tucson',
+  // Wave 5 – procedure articles
+  'veneers-vs-crowns',
+  'cost-of-root-canal',
+  'dental-implant-recovery-timeline',
+  'composite-vs-amalgam-fillings',
+  'dental-crown-cost-guide',
+  'what-is-a-deep-cleaning-dental',
+  'wisdom-teeth-removal-cost',
+  'dental-bonding-vs-veneers',
 ]
 
 export async function GET() {
