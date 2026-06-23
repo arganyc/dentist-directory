@@ -47,7 +47,19 @@ function buildJsonLd(d: Dentist): Record<string, unknown> {
   return schema;
 }
 
-export const dynamic = "force-dynamic";
+// ISR: render each profile once, then serve it from cache and refresh at most
+// once per day. This stops crawlers from hitting the database on every request
+// (the live-query load that exhausted the previous DB's compute quota).
+export const revalidate = 86400;
+
+// We don't prerender any of the ~64k profiles at build time. With dynamicParams
+// defaulting to true, each profile is generated on its first request and then
+// cached/served as static HTML until the next daily revalidation. Providing
+// generateStaticParams (even empty) is what opts this dynamic route into the
+// full-route cache instead of rendering on every request.
+export async function generateStaticParams() {
+  return [];
+}
 
 export async function generateMetadata(props: PageProps<"/dentists/[slug]">) {
   const { slug } = await props.params;

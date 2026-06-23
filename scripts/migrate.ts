@@ -13,7 +13,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { neon } from "@neondatabase/serverless";
+import { Pool } from "pg";
 
 const SOURCE = path.resolve(process.cwd(), "dentists-data.json");
 const BATCH_SIZE = 500;
@@ -265,7 +265,23 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const sql = neon(url);
+  const pool = new Pool({
+    connectionString: url,
+    ssl: { rejectUnauthorized: false },
+    max: 4,
+  });
+  // Minimal adapter matching the tagged-template + .query() surface this
+  // script already uses, backed by node-postgres (works with Supabase).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sql: any = async (strings: TemplateStringsArray, ...values: unknown[]) => {
+    let text = "";
+    strings.forEach((part, i) => {
+      text += part + (i < values.length ? `$${i + 1}` : "");
+    });
+    return (await pool.query(text, values as unknown[])).rows;
+  };
+  sql.query = async (text: string, params: unknown[] = []) =>
+    (await pool.query(text, params)).rows;
 
   if (RESET) {
     console.log("Dropping existing schema (--reset)...");
@@ -376,6 +392,8 @@ async function main(): Promise<void> {
   const [caRow] = (await sql`SELECT COUNT(*)::int AS n FROM dentists WHERE state_code = 'CA'`) as { n: number }[];
   console.log(`  Total rows:     ${countRow.n.toLocaleString()}`);
   console.log(`  CA dentists:    ${caRow.n.toLocaleString()}`);
+
+  await pool.end();
 }
 
 main().catch((err) => {
