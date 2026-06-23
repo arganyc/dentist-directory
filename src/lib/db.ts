@@ -25,10 +25,13 @@ let _sql: SqlClient | null = null;
 
 function getPool(): Pool {
   if (_pool) return _pool;
-  const url = process.env.DATABASE_URL;
+  // On Vercel the legacy Neon integration owns (and locks) DATABASE_URL, which
+  // still points at the retired Neon database. Prefer SUPABASE_DATABASE_URL
+  // there; fall back to DATABASE_URL for local dev (.env.local) and scripts.
+  const url = process.env.SUPABASE_DATABASE_URL ?? process.env.DATABASE_URL;
   if (!url) {
     throw new Error(
-      "DATABASE_URL is not set. Add your Postgres connection string to .env.local for development and to your Vercel project's environment variables for deploys."
+      "No database connection string set. Set SUPABASE_DATABASE_URL (Vercel) or DATABASE_URL (.env.local for local development)."
     );
   }
   _pool = new Pool({
