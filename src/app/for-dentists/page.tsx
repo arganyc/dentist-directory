@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ListingAuditCalculator from "./ListingAuditCalculator";
 
 export const metadata = {
   title: "For Dentists — Grow Your Practice",
@@ -81,16 +82,16 @@ export default function ForDentistsPage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  href="/claim"
+                  href="#listing-audit"
                   className="rounded-lg bg-white px-6 py-3 text-base font-bold text-blue-700 shadow-md transition hover:bg-blue-50"
                 >
-                  Get Listed Free
+                  Run Free Listing Audit
                 </Link>
                 <Link
-                  href="/pricing"
+                  href="/claim"
                   className="rounded-lg border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white transition hover:bg-white/20"
                 >
-                  See Pricing
+                  Claim Your Listing
                 </Link>
               </div>
             </div>
@@ -110,13 +111,15 @@ export default function ForDentistsPage() {
         </div>
       </section>
 
+      <ListingAuditCalculator />
+
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
             Built for practices that want to grow
           </h2>
           <p className="mt-4 text-lg text-slate-600">
-            Listing on SmileFinder is more than a directory entry — it's a complete growth channel
+            Listing on SmileFinder is more than a directory entry — it&apos;s a complete growth channel
             for your practice.
           </p>
         </div>
