@@ -14,6 +14,7 @@ export type BlogPost = {
 };
 
 import { keywordBlogPosts } from "./keyword-blog-posts";
+import { locationBlogPosts } from "./location-blog-posts";
 
 export const baseBlogPosts: BlogPost[] = [
   {
@@ -4086,7 +4087,7 @@ export const baseBlogPosts: BlogPost[] = [
   },
 ];
 
-export const blogPosts: BlogPost[] = [...keywordBlogPosts, ...baseBlogPosts];
+export const blogPosts: BlogPost[] = [...locationBlogPosts, ...keywordBlogPosts, ...baseBlogPosts];
 
 export function getBlogPostBySlug(slug: string): BlogPost | undefined {
   return blogPosts.find((p) => p.slug === slug);
