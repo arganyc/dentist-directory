@@ -85,6 +85,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/tools/dental-cancellation-loss-calculator" className="text-blue-200 hover:text-white">
+                  Cancellation Loss Calculator
+                </Link>
+              </li>
+              <li>
                 <Link href="/for-dentists/claim-outreach" className="text-blue-200 hover:text-white">
                   DMV Claim Outreach
                 </Link>
