@@ -7,10 +7,15 @@ export type BlogPost = {
   readTime: string;
   category: string;
   excerpt: string;
+  image?: string;
+  imageAlt?: string;
+  faqs?: { question: string; answer: string }[];
   content: { heading?: string; body: string }[];
 };
 
-export const blogPosts: BlogPost[] = [
+import { keywordBlogPosts } from "./keyword-blog-posts";
+
+export const baseBlogPosts: BlogPost[] = [
   {
     slug: "how-often-should-you-see-a-dentist",
     title: "How Often Should You Really See a Dentist?",
@@ -4080,6 +4085,8 @@ export const blogPosts: BlogPost[] = [
     ],
   },
 ];
+
+export const blogPosts: BlogPost[] = [...keywordBlogPosts, ...baseBlogPosts];
 
 export function getBlogPostBySlug(slug: string): BlogPost | undefined {
   return blogPosts.find((p) => p.slug === slug);
