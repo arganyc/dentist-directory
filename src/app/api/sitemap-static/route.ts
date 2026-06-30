@@ -11,6 +11,7 @@ export async function GET() {
   const staticUrls = [
     { loc: base, priority: '1.0', changefreq: 'daily' },
     { loc: `${base}/dentists`, priority: '0.9', changefreq: 'daily' },
+    { loc: `${base}/dentists-by-state`, priority: '0.9', changefreq: 'weekly' },
     { loc: `${base}/for-dentists`, priority: '0.8', changefreq: 'monthly' },
     { loc: `${base}/pricing`, priority: '0.7', changefreq: 'monthly' },
     { loc: `${base}/claim`, priority: '0.8', changefreq: 'monthly' },

@@ -41,6 +41,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/dentists-by-state" className="text-blue-200 hover:text-white">
+                  Dentists by State
+                </Link>
+              </li>
+              <li>
                 <Link
                   href="/dentists?accepting=true"
                   className="text-blue-200 hover:text-white"

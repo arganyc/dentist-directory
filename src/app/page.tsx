@@ -2,6 +2,7 @@ import Link from "next/link";
 import HomeSearch from "@/components/HomeSearch";
 import DentistCard from "@/components/DentistCard";
 import Newsletter from "@/components/Newsletter";
+import { blogPosts } from "@/lib/blog";
 import { allSpecialties } from "@/lib/dentists";
 import { getFeaturedDentists, getTopCities, getTotalDentistCount } from "@/lib/dentists-data";
 
@@ -153,6 +154,38 @@ export default async function Home() {
         <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {featured.map((d) => (
             <DentistCard key={d.id} dentist={d} />
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900">Recently Updated Dental Guides</h2>
+            <p className="mt-2 text-slate-600">
+              Fresh local and service guides for patients comparing dental care.
+            </p>
+          </div>
+          <Link
+            href="/blog"
+            className="hidden text-sm font-semibold text-blue-700 hover:text-blue-800 sm:block"
+          >
+            View all guides
+          </Link>
+        </div>
+        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {blogPosts.slice(0, 9).map((post) => (
+            <Link
+              key={post.slug}
+              href={`/blog/${post.slug}`}
+              className="rounded-xl border border-blue-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md"
+            >
+              <span className="text-xs font-semibold text-blue-700">{post.category}</span>
+              <h3 className="mt-2 text-base font-bold text-slate-900">{post.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                {post.excerpt}
+              </p>
+            </Link>
           ))}
         </div>
       </section>
