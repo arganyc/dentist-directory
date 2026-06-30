@@ -54,6 +54,7 @@ const BENEFITS = [
 export default async function ClaimPage(props: PageProps<"/claim">) {
   const sp = await props.searchParams;
   const cityRaw = pickString(sp.city).trim();
+  const sourceRaw = pickString(sp.source).trim();
   const city = cityRaw || "your area";
   const monthlySearches = syntheticMonthlySearches(cityRaw);
 
@@ -107,7 +108,7 @@ export default async function ClaimPage(props: PageProps<"/claim">) {
       </section>
 
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1fr_320px] lg:px-8">
-        <ClaimForm />
+        <ClaimForm campaignCity={cityRaw} campaignSource={sourceRaw} />
 
         <aside className="space-y-5">
           <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">

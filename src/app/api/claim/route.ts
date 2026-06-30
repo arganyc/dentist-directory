@@ -13,6 +13,8 @@ type ClaimInput = {
   address: string;
   website?: string;
   message?: string;
+  campaignCity?: string;
+  source?: string;
 };
 
 function pickString(v: unknown): string {
@@ -107,6 +109,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     address: pickString(obj.address),
     website: pickString(obj.website) || undefined,
     message: pickString(obj.message) || undefined,
+    campaignCity: pickString(obj.campaignCity) || undefined,
+    source: pickString(obj.source) || undefined,
   };
 
   if (!input.name) return badRequest("Name is required");
@@ -118,6 +122,13 @@ export async function POST(req: NextRequest): Promise<Response> {
   if (input.website && !/^https?:\/\//i.test(input.website)) {
     return badRequest("Website must start with http:// or https://");
   }
+
+  const campaignNotes = [
+    input.source ? `Campaign source: ${input.source}` : "",
+    input.campaignCity ? `Campaign city: ${input.campaignCity}` : "",
+  ].filter(Boolean);
+  const storedMessage = [...campaignNotes, input.message || ""].filter(Boolean).join("\n\n");
+  const storedInput = { ...input, message: storedMessage || undefined };
 
   const sql = getSql();
   let claimId: number;
@@ -133,7 +144,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         input.practiceName,
         input.address,
         input.website ?? null,
-        input.message ?? null,
+        storedInput.message ?? null,
       ]
     )) as { id: number }[];
     claimId = rows[0].id;
@@ -145,7 +156,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   // Email is best-effort: a failure here doesn't fail the submission. The row
   // is already saved and an admin can process from the dashboard / DB.
   try {
-    await sendNotification(input, claimId);
+    await sendNotification(storedInput, claimId);
   } catch (err) {
     console.error("[claim] Notification error:", err);
   }

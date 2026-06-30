@@ -4,7 +4,12 @@ import { useState } from "react";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-export default function ClaimForm() {
+type Props = {
+  campaignCity?: string;
+  campaignSource?: string;
+};
+
+export default function ClaimForm({ campaignCity = "", campaignSource = "" }: Props) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -24,6 +29,8 @@ export default function ClaimForm() {
       address: fd.get("address"),
       website: fd.get("website") || "",
       message: fd.get("message") || "",
+      campaignCity,
+      source: campaignSource,
     };
 
     try {
@@ -83,6 +90,13 @@ export default function ClaimForm() {
       onSubmit={handleSubmit}
       className="space-y-5 rounded-2xl border border-blue-100 bg-white p-6 shadow-sm sm:p-8"
     >
+      {campaignCity && (
+        <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+          This request is tagged for the <span className="font-semibold">{campaignCity}</span>{" "}
+          dentist outreach campaign.
+        </div>
+      )}
+
       {status === "error" && errorMessage && (
         <div
           role="alert"

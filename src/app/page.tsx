@@ -3,6 +3,7 @@ import HomeSearch from "@/components/HomeSearch";
 import DentistCard from "@/components/DentistCard";
 import Newsletter from "@/components/Newsletter";
 import { blogPosts } from "@/lib/blog";
+import { dmvLandingPages } from "@/lib/dmv-growth";
 import { allSpecialties } from "@/lib/dentists";
 import { getFeaturedDentists, getTopCities, getTotalDentistCount } from "@/lib/dentists-data";
 
@@ -155,6 +156,42 @@ export default async function Home() {
           {featured.map((d) => (
             <DentistCard key={d.id} dentist={d} />
           ))}
+        </div>
+      </section>
+
+      <section className="bg-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[320px_1fr] lg:items-start">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wider text-blue-700">
+                DMV spotlight
+              </p>
+              <h2 className="mt-2 text-3xl font-bold text-slate-900">
+                Local dentist guides for DC, Maryland, and Northern Virginia
+              </h2>
+              <p className="mt-3 text-slate-600">
+                Browse focused city pages for high-intent DMV searches and help local practices
+                claim accurate directory listings.
+              </p>
+              <Link
+                href="/dmv-dentists"
+                className="mt-5 inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              >
+                Explore DMV dentists
+              </Link>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {dmvLandingPages.slice(0, 6).map((page) => (
+                <Link
+                  key={page.slug}
+                  href={`/dmv-dentists/${page.slug}`}
+                  className="rounded-lg border border-blue-100 bg-slate-50 p-4 text-sm font-semibold text-slate-800 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  {page.city}, {page.stateCode}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 

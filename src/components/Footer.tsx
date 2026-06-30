@@ -46,6 +46,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/dmv-dentists" className="text-blue-200 hover:text-white">
+                  DMV Dentists
+                </Link>
+              </li>
+              <li>
                 <Link
                   href="/dentists?accepting=true"
                   className="text-blue-200 hover:text-white"
@@ -77,6 +82,11 @@ export default function Footer() {
               <li>
                 <Link href="/claim" className="text-blue-200 hover:text-white">
                   Claim Your Listing
+                </Link>
+              </li>
+              <li>
+                <Link href="/for-dentists/claim-outreach" className="text-blue-200 hover:text-white">
+                  DMV Claim Outreach
                 </Link>
               </li>
             </ul>
