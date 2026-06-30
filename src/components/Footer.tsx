@@ -89,6 +89,11 @@ export default function Footer() {
                   DMV Claim Outreach
                 </Link>
               </li>
+              <li>
+                <Link href="/for-dentists/google-business-profile-strategy" className="text-blue-200 hover:text-white">
+                  Google Profile Guide
+                </Link>
+              </li>
             </ul>
           </div>
 

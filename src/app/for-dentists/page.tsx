@@ -98,6 +98,12 @@ export default function ForDentistsPage() {
                 >
                   DMV Claim Campaign
                 </Link>
+                <Link
+                  href="/for-dentists/google-business-profile-strategy"
+                  className="rounded-lg border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white transition hover:bg-white/20"
+                >
+                  Google Profile Checklist
+                </Link>
               </div>
             </div>
 

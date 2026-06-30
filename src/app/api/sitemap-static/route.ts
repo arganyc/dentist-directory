@@ -16,6 +16,7 @@ export async function GET() {
     { loc: `${base}/dmv-dentists`, priority: '0.9', changefreq: 'weekly' },
     { loc: `${base}/for-dentists`, priority: '0.8', changefreq: 'monthly' },
     { loc: `${base}/for-dentists/claim-outreach`, priority: '0.8', changefreq: 'monthly' },
+    { loc: `${base}/for-dentists/google-business-profile-strategy`, priority: '0.8', changefreq: 'monthly' },
     { loc: `${base}/pricing`, priority: '0.7', changefreq: 'monthly' },
     { loc: `${base}/claim`, priority: '0.8', changefreq: 'monthly' },
     { loc: `${base}/blog`, priority: '0.8', changefreq: 'weekly' },
