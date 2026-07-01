@@ -1,10 +1,21 @@
 "use client";
 
+/* eslint-disable react/no-unescaped-entities */
+
 import { useState } from "react";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-export default function ClaimForm() {
+type ClaimFormValues = {
+  npi?: string;
+  practiceName?: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  message?: string;
+};
+
+export default function ClaimForm({ initialValues = {} }: { initialValues?: ClaimFormValues }) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -95,23 +106,38 @@ export default function ClaimForm() {
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Your Name" name="name" placeholder="Dr. Jane Smith" required />
         <Field label="Email" name="email" type="email" placeholder="you@practice.com" required />
-        <Field label="Phone" name="phone" type="tel" placeholder="(555) 555-0100" required />
+        <Field
+          label="Phone"
+          name="phone"
+          type="tel"
+          placeholder="(555) 555-0100"
+          defaultValue={initialValues.phone}
+          required
+        />
         <Field
           label="NPI Number"
           name="npi"
           placeholder="10-digit NPI"
+          defaultValue={initialValues.npi}
           pattern="\d{10}"
           required
           hint="National Provider Identifier — used to verify your license"
         />
       </div>
 
-      <Field label="Practice Name" name="practiceName" placeholder="Smith Family Dental" required />
+      <Field
+        label="Practice Name"
+        name="practiceName"
+        placeholder="Smith Family Dental"
+        defaultValue={initialValues.practiceName}
+        required
+      />
 
       <Field
         label="Practice Address"
         name="address"
         placeholder="123 Main St, City, State, ZIP"
+        defaultValue={initialValues.address}
         required
       />
 
@@ -120,6 +146,7 @@ export default function ClaimForm() {
         name="website"
         type="url"
         placeholder="https://yourpractice.com"
+        defaultValue={initialValues.website}
         hint="Optional — shown as a link on your profile. Free listings get rel=&quot;nofollow&quot;; upgrade to remove."
       />
 
@@ -131,6 +158,7 @@ export default function ClaimForm() {
           name="message"
           rows={4}
           placeholder="Tell us about your practice or note an existing listing you want to claim."
+          defaultValue={initialValues.message}
           className="mt-1.5 block w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
         />
       </div>
@@ -168,6 +196,7 @@ function Field({
   required,
   pattern,
   hint,
+  defaultValue,
 }: {
   label: string;
   name: string;
@@ -176,6 +205,7 @@ function Field({
   required?: boolean;
   pattern?: string;
   hint?: string;
+  defaultValue?: string;
 }) {
   return (
     <div>
@@ -189,6 +219,7 @@ function Field({
         placeholder={placeholder}
         required={required}
         pattern={pattern}
+        defaultValue={defaultValue}
         className="mt-1.5 block w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
       />
       {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}

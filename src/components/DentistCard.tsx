@@ -34,7 +34,23 @@ function profileCompletion(d: Dentist): number {
 }
 
 export default function DentistCard({ dentist }: { dentist: Dentist }) {
-  const claimHref = `/claim?practice=${encodeURIComponent(dentist.slug)}`;
+  const addressLine = [
+    dentist.address.street,
+    [dentist.address.city, dentist.address.stateCode].filter(Boolean).join(", "),
+    dentist.address.zip,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const claimParams = new URLSearchParams({
+    profile: `https://usdentistsdirectory.com/dentists/${dentist.slug}`,
+    npi: dentist.id,
+    practiceName: dentist.practiceName || dentist.name,
+    city: dentist.address.city,
+  });
+  if (addressLine) claimParams.set("address", addressLine);
+  if (dentist.phone) claimParams.set("phone", dentist.phone);
+  if (dentist.website) claimParams.set("website", dentist.website);
+  const claimHref = `/claim?${claimParams.toString()}`;
   // Real reviews only show for claimed (Premium) listings with non-zero
   // review count. Everything else gets the empty-state placeholder.
   const showRealRating = dentist.isPremium && dentist.reviewCount > 0;

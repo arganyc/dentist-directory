@@ -82,6 +82,23 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
   const d = await getDentistBySlug(slug);
   if (!d) notFound();
   const reviews = getReviewsForDentist(d.id, 4);
+  const addressLine = [
+    d.address.street,
+    [d.address.city, d.address.stateCode].filter(Boolean).join(", "),
+    d.address.zip,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const claimParams = new URLSearchParams({
+    profile: `${SITE_URL}/dentists/${d.slug}`,
+    npi: d.id,
+    practiceName: d.practiceName || d.name,
+    city: d.address.city,
+  });
+  if (addressLine) claimParams.set("address", addressLine);
+  if (d.phone) claimParams.set("phone", d.phone);
+  if (d.website) claimParams.set("website", d.website);
+  const claimHref = `/claim?${claimParams.toString()}`;
 
   const initials = d.name
     .replace(/^Dr\.?\s+/i, "")
@@ -295,7 +312,7 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
                 leads.
               </p>
               <Link
-                href="/claim"
+                href={claimHref}
                 className="mt-4 inline-block rounded-md bg-white px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
               >
                 Claim listing →

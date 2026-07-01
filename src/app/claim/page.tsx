@@ -12,6 +12,11 @@ function pickString(value: string | string[] | undefined): string {
   return value ?? "";
 }
 
+function cleanWebsite(value: string): string {
+  if (!value) return "";
+  return value.startsWith("http") ? value : `https://${value}`;
+}
+
 // Deterministic monthly-search synthesis until real search-volume analytics
 // ship. The same city always shows the same number, so the urgency bar is
 // stable across page loads.
@@ -54,8 +59,21 @@ const BENEFITS = [
 export default async function ClaimPage(props: PageProps<"/claim">) {
   const sp = await props.searchParams;
   const cityRaw = pickString(sp.city).trim();
+  const npi = pickString(sp.npi).trim();
+  const practiceName = pickString(sp.practiceName).trim();
+  const address = pickString(sp.address).trim();
+  const phone = pickString(sp.phone).trim();
+  const website = cleanWebsite(pickString(sp.website).trim());
+  const profile = pickString(sp.profile).trim();
   const city = cityRaw || "your area";
   const monthlySearches = syntheticMonthlySearches(cityRaw);
+  const hasProfileContext = Boolean(practiceName || npi || profile);
+  const headline = practiceName
+    ? `Claim ${practiceName} on SmileFinder.`
+    : "Take control of how patients find your practice online.";
+  const initialMessage = hasProfileContext
+    ? `I want to claim this existing SmileFinder listing${profile ? `: ${profile}` : ""}.`
+    : "";
 
   return (
     <div className="bg-slate-50">
@@ -76,7 +94,7 @@ export default async function ClaimPage(props: PageProps<"/claim">) {
             / <span className="text-white">Claim Listing</span>
           </nav>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl">
-            Take control of how patients find your practice online.
+            {headline}
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-blue-100">
             Claim your listing in 2 minutes and make sure local patients see the right information
@@ -107,7 +125,16 @@ export default async function ClaimPage(props: PageProps<"/claim">) {
       </section>
 
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1fr_320px] lg:px-8">
-        <ClaimForm />
+        <ClaimForm
+          initialValues={{
+            npi,
+            practiceName,
+            address,
+            phone,
+            website,
+            message: initialMessage,
+          }}
+        />
 
         <aside className="space-y-5">
           <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
