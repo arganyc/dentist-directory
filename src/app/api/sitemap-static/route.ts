@@ -4,10 +4,11 @@ import { blogPosts } from '@/lib/blog'
 import { dmvLandingPages } from '@/lib/dmv-growth'
 
 const blogSlugs = blogPosts.map((post) => post.slug)
+const SITE_LAST_UPDATED = '2026-06-20'
+const SITEMAP_CACHE_SECONDS = 604800 // 7 days
 
 export async function GET() {
   const base = 'https://www.usdentistsdirectory.com'
-  const today = new Date().toISOString().split('T')[0]
 
   const staticUrls = [
     { loc: base, priority: '1.0', changefreq: 'daily' },
@@ -27,14 +28,14 @@ export async function GET() {
     loc: `${base}/dmv-dentists/${page.slug}`,
     priority: '0.8',
     changefreq: 'weekly',
-    lastmod: today,
+    lastmod: SITE_LAST_UPDATED,
   }))
 
   const blogUrls = blogSlugs.map((slug) => ({
     loc: `${base}/blog/${slug}`,
     priority: '0.7',
     changefreq: 'monthly',
-    lastmod: today,
+    lastmod: SITE_LAST_UPDATED,
   }))
 
   const allUrls = [...staticUrls, ...dmvUrls, ...blogUrls]
@@ -45,7 +46,7 @@ ${allUrls
   .map(
     (u) => `  <url>
     <loc>${u.loc}</loc>
-    <lastmod>${'lastmod' in u ? u.lastmod : today}</lastmod>
+    <lastmod>${'lastmod' in u ? u.lastmod : SITE_LAST_UPDATED}</lastmod>
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>
   </url>`
@@ -54,6 +55,9 @@ ${allUrls
 </urlset>`
 
   return new NextResponse(xml, {
-    headers: { 'Content-Type': 'application/xml' },
+    headers: {
+      'Content-Type': 'application/xml',
+      'Cache-Control': `public, s-maxage=${SITEMAP_CACHE_SECONDS}, stale-while-revalidate=86400`,
+    },
   })
 }
