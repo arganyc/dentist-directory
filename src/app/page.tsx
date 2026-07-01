@@ -7,14 +7,10 @@ import { dmvLandingPages } from "@/lib/dmv-growth";
 import { allSpecialties } from "@/lib/dentists";
 import { getFeaturedDentists, getTopCities, getTotalDentistCount } from "@/lib/dentists-data";
 
-// ISR: regenerate at most once per minute, serve cached HTML in between.
-// This keeps the homepage effectively live (count updates within ~60s of
-// new data) without making every visitor pay for a fresh Neon round-trip
-// — which on free-tier Neon includes occasional ~5-10s cold-starts that
-// can blow Vercel's 10s function timeout. Stale-while-revalidate also
-// means a transient DB failure keeps the previous good page rendering
-// instead of returning a 500.
-export const revalidate = 60;
+// ISR: regenerate at most once per day, serve cached HTML in between.
+// Directory counts do not need minute-level freshness, and a longer window
+// keeps crawlers from creating unnecessary Vercel ISR work.
+export const revalidate = 86400;
 
 // Fallback values keep render going if Postgres is briefly unreachable.
 const FALLBACK_TOTAL = 119_566;

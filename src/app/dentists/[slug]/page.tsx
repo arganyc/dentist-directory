@@ -48,13 +48,13 @@ function buildJsonLd(d: Dentist): Record<string, unknown> {
 }
 
 // ISR: render each profile once, then serve it from cache and refresh at most
-// once per day. This stops crawlers from hitting the database on every request
-// (the live-query load that exhausted the previous DB's compute quota).
-export const revalidate = 86400;
+// once per week. Profile information rarely changes, and this keeps crawlers
+// from creating unnecessary Vercel ISR work.
+export const revalidate = 604800;
 
 // We don't prerender any of the ~64k profiles at build time. With dynamicParams
 // defaulting to true, each profile is generated on its first request and then
-// cached/served as static HTML until the next daily revalidation. Providing
+// cached/served as static HTML until the next weekly revalidation. Providing
 // generateStaticParams (even empty) is what opts this dynamic route into the
 // full-route cache instead of rendering on every request.
 export async function generateStaticParams() {
