@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 
 export const revalidate = 86400
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const base = 'https://www.usdentistsdirectory.com'

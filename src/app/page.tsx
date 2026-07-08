@@ -2,17 +2,15 @@ import Link from "next/link";
 import HomeSearch from "@/components/HomeSearch";
 import DentistCard from "@/components/DentistCard";
 import Newsletter from "@/components/Newsletter";
+import { blogPosts } from "@/lib/blog";
+import { dmvLandingPages } from "@/lib/dmv-growth";
 import { allSpecialties, slugify, stateNameByCode } from "@/lib/dentists";
 import { getFeaturedDentists, getTopCities, getTotalDentistCount } from "@/lib/dentists-data";
 
-// ISR: regenerate at most once per minute, serve cached HTML in between.
-// This keeps the homepage effectively live (count updates within ~60s of
-// new data) without making every visitor pay for a fresh Neon round-trip
-// — which on free-tier Neon includes occasional ~5-10s cold-starts that
-// can blow Vercel's 10s function timeout. Stale-while-revalidate also
-// means a transient DB failure keeps the previous good page rendering
-// instead of returning a 500.
-export const revalidate = 60;
+// ISR: regenerate at most once per day, serve cached HTML in between.
+// Directory counts do not need minute-level freshness, and a longer window
+// keeps crawlers from creating unnecessary Vercel ISR work.
+export const revalidate = 86400;
 
 // Fallback values keep render going if Postgres is briefly unreachable.
 const FALLBACK_TOTAL = 119_566;
@@ -153,6 +151,74 @@ export default async function Home() {
         <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {featured.map((d) => (
             <DentistCard key={d.id} dentist={d} />
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[320px_1fr] lg:items-start">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wider text-blue-700">
+                DMV spotlight
+              </p>
+              <h2 className="mt-2 text-3xl font-bold text-slate-900">
+                Local dentist guides for DC, Maryland, and Northern Virginia
+              </h2>
+              <p className="mt-3 text-slate-600">
+                Browse focused city pages for high-intent DMV searches and help local practices
+                claim accurate directory listings.
+              </p>
+              <Link
+                href="/dmv-dentists"
+                className="mt-5 inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              >
+                Explore DMV dentists
+              </Link>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {dmvLandingPages.slice(0, 6).map((page) => (
+                <Link
+                  key={page.slug}
+                  href={`/dmv-dentists/${page.slug}`}
+                  className="rounded-lg border border-blue-100 bg-slate-50 p-4 text-sm font-semibold text-slate-800 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  {page.city}, {page.stateCode}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900">Recently Updated Dental Guides</h2>
+            <p className="mt-2 text-slate-600">
+              Fresh local and service guides for patients comparing dental care.
+            </p>
+          </div>
+          <Link
+            href="/blog"
+            className="hidden text-sm font-semibold text-blue-700 hover:text-blue-800 sm:block"
+          >
+            View all guides
+          </Link>
+        </div>
+        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {blogPosts.slice(0, 9).map((post) => (
+            <Link
+              key={post.slug}
+              href={`/blog/${post.slug}`}
+              className="rounded-xl border border-blue-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md"
+            >
+              <span className="text-xs font-semibold text-blue-700">{post.category}</span>
+              <h3 className="mt-2 text-base font-bold text-slate-900">{post.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                {post.excerpt}
+              </p>
+            </Link>
           ))}
         </div>
       </section>

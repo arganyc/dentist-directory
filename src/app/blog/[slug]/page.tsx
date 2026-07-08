@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { blogPosts, getBlogPostBySlug } from "@/lib/blog";
@@ -13,12 +14,25 @@ export async function generateMetadata(props: PageProps<"/blog/[slug]">) {
   return {
     title: post.title,
     description: post.description,
+    alternates: {
+      canonical: `/blog/${post.slug}`,
+    },
     openGraph: {
       title: post.title,
       description: post.description,
       type: "article",
       authors: [post.author],
       publishedTime: post.date,
+      images: post.image
+        ? [
+            {
+              url: post.image,
+              width: 1200,
+              height: 675,
+              alt: post.imageAlt || post.title,
+            },
+          ]
+        : undefined,
     },
   };
 }
@@ -29,9 +43,47 @@ export default async function BlogPost(props: PageProps<"/blog/[slug]">) {
   if (!post) notFound();
 
   const related = blogPosts.filter((p) => p.slug !== post.slug).slice(0, 2);
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: post.title,
+      description: post.description,
+      image: post.image ? `https://www.usdentistsdirectory.com${post.image}` : undefined,
+      author: {
+        "@type": "Organization",
+        name: post.author,
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "UsDentistsDirectory.com",
+        url: "https://www.usdentistsdirectory.com",
+      },
+      mainEntityOfPage: `https://www.usdentistsdirectory.com/blog/${post.slug}`,
+      datePublished: post.date,
+    },
+    post.faqs?.length
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: post.faqs.map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: faq.answer,
+            },
+          })),
+        }
+      : null,
+  ].filter(Boolean);
 
   return (
     <div className="bg-slate-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
         <nav className="text-sm text-slate-500">
           <Link href="/" className="hover:text-blue-700">
@@ -61,6 +113,19 @@ export default async function BlogPost(props: PageProps<"/blog/[slug]">) {
             <p className="text-sm font-semibold text-slate-900">By {post.author}</p>
           </div>
         </header>
+
+        {post.image && (
+          <div className="mt-8 overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm">
+            <Image
+              src={post.image}
+              alt={post.imageAlt || post.title}
+              width={1200}
+              height={675}
+              priority={false}
+              className="h-auto w-full object-cover"
+            />
+          </div>
+        )}
 
         <div className="prose-blog mt-8">
           {post.content.map((section, i) => (

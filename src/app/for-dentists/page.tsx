@@ -92,6 +92,24 @@ export default function ForDentistsPage() {
                 >
                   See Pricing
                 </Link>
+                <Link
+                  href="/for-dentists/claim-outreach"
+                  className="rounded-lg border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white transition hover:bg-white/20"
+                >
+                  DMV Claim Campaign
+                </Link>
+                <Link
+                  href="/for-dentists/google-business-profile-strategy"
+                  className="rounded-lg border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white transition hover:bg-white/20"
+                >
+                  Google Profile Checklist
+                </Link>
+                <Link
+                  href="/tools/dental-cancellation-loss-calculator"
+                  className="rounded-lg border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white transition hover:bg-white/20"
+                >
+                  Cancellation Loss Calculator
+                </Link>
               </div>
             </div>
 

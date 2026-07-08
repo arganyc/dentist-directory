@@ -7,10 +7,17 @@ export type BlogPost = {
   readTime: string;
   category: string;
   excerpt: string;
+  image?: string;
+  imageAlt?: string;
+  faqs?: { question: string; answer: string }[];
   content: { heading?: string; body: string }[];
 };
 
-export const blogPosts: BlogPost[] = [
+import { keywordBlogPosts } from "./keyword-blog-posts";
+import { locationBlogPosts } from "./location-blog-posts";
+import { majorCityBlogPosts } from "./major-city-blog-posts";
+
+export const baseBlogPosts: BlogPost[] = [
   {
     slug: "how-often-should-you-see-a-dentist",
     title: "How Often Should You Really See a Dentist?",
@@ -4079,6 +4086,13 @@ export const blogPosts: BlogPost[] = [
       { heading: "Final Thoughts", body: "You don't need a dental degree to understand the basics of what appears on your X-rays. A rudimentary understanding of what healthy bone, healthy teeth, cavities, and bone loss look like transforms dental appointments from passive procedures into informed conversations. Ask your dentist to walk you through your X-rays at your next visit — most dentists genuinely appreciate patients who are engaged enough to want to understand what they're seeing." },
     ],
   },
+];
+
+export const blogPosts: BlogPost[] = [
+  ...majorCityBlogPosts,
+  ...locationBlogPosts,
+  ...keywordBlogPosts,
+  ...baseBlogPosts,
 ];
 
 export function getBlogPostBySlug(slug: string): BlogPost | undefined {

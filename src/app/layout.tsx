@@ -11,7 +11,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://smilefinder.example"),
+  metadataBase: new URL("https://www.usdentistsdirectory.com"),
   title: {
     default: "SmileFinder — US Dentist Directory",
     template: "%s | SmileFinder",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     title: "SmileFinder — US Dentist Directory",
     description:
       "Find the right dentist for you. Browse verified US dentists by city, state, and specialty.",
-    url: "https://smilefinder.example",
+    url: "https://www.usdentistsdirectory.com",
     siteName: "SmileFinder",
     locale: "en_US",
     type: "website",
