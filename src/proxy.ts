@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { stateNameByCode, US_STATES } from "./src/lib/dentists";
+import { stateNameByCode, US_STATES } from "./lib/dentists";
 
 function slugify(value: string): string {
   return value
@@ -25,7 +25,7 @@ function stateSlugFromCode(code: string): string {
   return slugify(stateNameByCode(code));
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const url = request.nextUrl.clone();
   const { pathname, searchParams } = url;
   const hasStateQuery = searchParams.has("state");

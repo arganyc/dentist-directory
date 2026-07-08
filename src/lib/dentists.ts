@@ -115,3 +115,16 @@ const STATE_NAME_BY_CODE = new Map(US_STATES.map((s) => [s.code, s.name]));
 export function stateNameByCode(code: string): string {
   return STATE_NAME_BY_CODE.get(code.toUpperCase()) ?? code;
 }
+
+// Matches the slugify in middleware.ts / next.config.ts — must stay in sync
+// so links built with this resolve without an extra redirect hop.
+export function slugify(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\+/g, " ")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}

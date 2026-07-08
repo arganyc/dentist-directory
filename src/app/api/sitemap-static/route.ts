@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { US_STATES, slugify } from '@/lib/dentists'
 
 const blogSlugs = [
   // Original articles
@@ -205,7 +206,14 @@ export async function GET() {
     lastmod: today,
   }))
 
-  const allUrls = [...staticUrls, ...blogUrls]
+  const stateUrls = US_STATES.map((state) => ({
+    loc: `${base}/dentists/${slugify(state.name)}`,
+    priority: '0.8',
+    changefreq: 'weekly',
+    lastmod: today,
+  }))
+
+  const allUrls = [...staticUrls, ...stateUrls, ...blogUrls]
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

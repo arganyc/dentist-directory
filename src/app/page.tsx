@@ -2,7 +2,7 @@ import Link from "next/link";
 import HomeSearch from "@/components/HomeSearch";
 import DentistCard from "@/components/DentistCard";
 import Newsletter from "@/components/Newsletter";
-import { allSpecialties } from "@/lib/dentists";
+import { allSpecialties, slugify, stateNameByCode } from "@/lib/dentists";
 import { getFeaturedDentists, getTopCities, getTotalDentistCount } from "@/lib/dentists-data";
 
 // ISR: regenerate at most once per minute, serve cached HTML in between.
@@ -79,7 +79,7 @@ export default async function Home() {
             {topCities.slice(0, 6).map((c) => (
               <Link
                 key={`${c.stateCode}-${c.city}`}
-                href={`/dentists?state=${c.stateCode}&city=${encodeURIComponent(c.city)}`}
+                href={`/dentists/${slugify(stateNameByCode(c.stateCode))}/${slugify(c.city)}`}
                 className="rounded-full bg-white/10 px-3 py-1 text-white ring-1 ring-white/20 transition hover:bg-white/20"
               >
                 {c.city}, {c.stateCode}
@@ -177,7 +177,7 @@ export default async function Home() {
             {topCities.map((c) => (
               <Link
                 key={`${c.stateCode}-${c.city}`}
-                href={`/dentists?state=${c.stateCode}&city=${encodeURIComponent(c.city)}`}
+                href={`/dentists/${slugify(stateNameByCode(c.stateCode))}/${slugify(c.city)}`}
                 className="group flex items-center justify-between rounded-xl border border-blue-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md"
               >
                 <div className="min-w-0">

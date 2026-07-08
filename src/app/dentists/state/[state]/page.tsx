@@ -2,7 +2,7 @@ import Link from "next/link";
 import DentistCard from "@/components/DentistCard";
 import Filters from "@/components/Filters";
 import Pagination from "@/components/Pagination";
-import { stateNameByCode, US_STATES } from "@/lib/dentists";
+import { slugify, stateNameByCode, US_STATES } from "@/lib/dentists";
 import { getCitiesForState, searchDentists } from "@/lib/dentists-data";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -90,6 +90,25 @@ export default async function StateDentistsPage(props: PageProps<"/dentists/stat
           </p>
         </div>
       </div>
+
+      {availableCities.length > 0 && (
+        <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-600">
+            Browse by city
+          </h2>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {availableCities.map((city) => (
+              <Link
+                key={city}
+                href={`/dentists/${stateParam}/${slugify(city)}`}
+                className="rounded-full border border-blue-200 bg-white px-3 py-1.5 text-sm text-blue-700 transition hover:border-blue-300 hover:bg-blue-50"
+              >
+                {city}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[280px_1fr] lg:px-8">
         <Filters availableCities={availableCities} />
