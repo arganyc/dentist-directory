@@ -10,18 +10,18 @@ export const metadata = {
 export default function BlogIndex() {
   return (
     <div className="bg-slate-50">
-      <div className="border-b border-blue-100 bg-white">
+      <div className="border-b border-blue-100 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
         <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6 lg:px-8">
-          <nav className="text-sm text-slate-500">
-            <Link href="/" className="hover:text-blue-700">
+          <nav className="text-sm text-blue-100">
+            <Link href="/" className="hover:text-white">
               Home
             </Link>{" "}
-            / <span className="text-slate-700">Blog</span>
+            / <span className="text-white">Blog</span>
           </nav>
-          <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+          <h1 className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
             Dental Health Blog
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-slate-600">
+          <p className="mt-4 max-w-2xl text-lg text-blue-100">
             Practical, evidence-based articles written by licensed dentists. Everything from
             preventive care to navigating treatment decisions.
           </p>

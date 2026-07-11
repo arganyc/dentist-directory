@@ -20,18 +20,18 @@ function LockIcon() {
 export default function ToolsIndexPage() {
   return (
     <div className="bg-slate-50">
-      <section className="border-b border-blue-100 bg-white">
+      <section className="border-b border-blue-100 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <nav className="text-sm text-slate-500">
-            <Link href="/" className="hover:text-blue-700">
+          <nav className="text-sm text-blue-100">
+            <Link href="/" className="hover:text-white">
               Home
             </Link>{" "}
-            / <span className="text-slate-700">Tools</span>
+            / <span className="text-white">Tools</span>
           </nav>
-          <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+          <h1 className="mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">
             Free tools for dental practices
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-slate-600">
+          <p className="mt-4 max-w-2xl text-lg text-blue-100">
             Practical calculators for dentists and office managers. One is free for anyone; the rest
             unlock the moment you claim your free directory listing.
           </p>

@@ -67,23 +67,23 @@ export default async function DentistsPage(props: PageProps<"/dentists">) {
 
   return (
     <div className="bg-slate-50">
-      <div className="border-b border-blue-100 bg-white">
+      <div className="border-b border-blue-100 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-          <nav className="text-sm text-slate-500">
-            <Link href="/" className="hover:text-blue-700">
+          <nav className="text-sm text-blue-100">
+            <Link href="/" className="hover:text-white">
               Home
             </Link>{" "}
-            / <span className="text-slate-700">Find a Dentist</span>
+            / <span className="text-white">Find a Dentist</span>
           </nav>
-          <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">Find a Dentist</h1>
-          <p className="mt-2 text-slate-600">
+          <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Find a Dentist</h1>
+          <p className="mt-2 text-blue-100">
             {total === 0 ? (
               <>No dentists found {summary}</>
             ) : (
               <>
-                Showing <span className="font-semibold text-slate-900">{startIndex.toLocaleString()}</span>–
-                <span className="font-semibold text-slate-900">{endIndex.toLocaleString()}</span> of{" "}
-                <span className="font-semibold text-slate-900">{total.toLocaleString()}</span>{" "}
+                Showing <span className="font-semibold text-white">{startIndex.toLocaleString()}</span>–
+                <span className="font-semibold text-white">{endIndex.toLocaleString()}</span> of{" "}
+                <span className="font-semibold text-white">{total.toLocaleString()}</span>{" "}
                 {total === 1 ? "dentist" : "dentists"} {summary}
               </>
             )}
