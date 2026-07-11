@@ -71,16 +71,24 @@ export default function ClaimForm({ campaignCity = "", campaignSource = "" }: Pr
         </div>
         <h2 className="mt-5 text-2xl font-bold text-slate-900">Submission received</h2>
         <p className="mt-2 text-slate-700">
-          Thanks — we'll verify your information and reach out within one business day. Watch for an
-          email from <span className="font-semibold">admin@usdentistsdirectory.com</span>.
+          Thanks — we&apos;ll verify your listing information and reach out within one business day. In
+          the meantime, your free practice-management tools are unlocked right now.
         </p>
-        <button
-          type="button"
-          onClick={() => setStatus("idle")}
-          className="mt-6 text-sm font-semibold text-blue-700 hover:text-blue-800"
+        <a
+          href="/tools/member"
+          className="mt-6 inline-block rounded-lg bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-blue-700"
         >
-          Submit another listing →
-        </button>
+          Open your free tools →
+        </a>
+        <div>
+          <button
+            type="button"
+            onClick={() => setStatus("idle")}
+            className="mt-4 text-sm font-semibold text-blue-700 hover:text-blue-800"
+          >
+            Submit another listing →
+          </button>
+        </div>
       </div>
     );
   }

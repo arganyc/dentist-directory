@@ -35,10 +35,10 @@ export default function Navbar() {
             For Dentists
           </Link>
           <Link
-            href="/tools/dental-cancellation-loss-calculator"
+            href="/tools"
             className="hidden rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 lg:inline-block"
           >
-            Free Tool
+            Free Tools
           </Link>
           <Link
             href="/for-dentists"

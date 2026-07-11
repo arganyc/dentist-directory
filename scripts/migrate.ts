@@ -330,6 +330,10 @@ async function main(): Promise<void> {
   `;
   await sql`CREATE INDEX IF NOT EXISTS idx_claims_created_at ON claims(created_at DESC)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_claims_status ON claims(status)`;
+  // access_token grants instant self-serve access to gated practice-management
+  // tools at /tools/member upon claim submission (separate from the manual
+  // review that still gates edits to the public listing itself).
+  await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS access_token TEXT UNIQUE`;
 
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_state_code ON dentists(state_code)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_state_city ON dentists(state_code, city)`;

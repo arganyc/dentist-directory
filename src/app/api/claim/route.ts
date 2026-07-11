@@ -1,8 +1,10 @@
 import type { NextRequest } from "next/server";
 import { getSql } from "@/lib/db";
+import { generateAccessToken, TOOLS_ACCESS_COOKIE } from "@/lib/toolsAccess";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@usdentistsdirectory.com";
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "admin@usdentistsdirectory.com";
+const SITE_URL = process.env.SITE_URL || "https://www.usdentistsdirectory.com";
 
 type ClaimInput = {
   name: string;
@@ -85,6 +87,49 @@ async function sendNotification(input: ClaimInput, claimId: number): Promise<voi
   }
 }
 
+async function sendAccessEmail(input: ClaimInput, accessUrl: string): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn("[claim] RESEND_API_KEY not set — skipping access-link email");
+    return;
+  }
+  const { Resend } = await import("resend");
+  const resend = new Resend(apiKey);
+
+  const text = [
+    `Thanks for claiming ${input.practiceName} on US Dentists Directory.`,
+    ``,
+    `Your free practice-management tools (overhead, case acceptance, hygiene`,
+    `production, patient acquisition cost, staffing, equipment ROI, and`,
+    `insurance write-off calculators) are ready now:`,
+    ``,
+    accessUrl,
+    ``,
+    `We'll separately verify and update your public listing information`,
+    `within one business day.`,
+  ].join("\n");
+
+  const html = `
+    <p>Thanks for claiming <b>${escapeHtml(input.practiceName)}</b> on US Dentists Directory.</p>
+    <p>Your free practice-management tools (overhead, case acceptance, hygiene production,
+    patient acquisition cost, staffing, equipment ROI, and insurance write-off calculators)
+    are ready now:</p>
+    <p><a href="${escapeHtml(accessUrl)}">${escapeHtml(accessUrl)}</a></p>
+    <p>We'll separately verify and update your public listing information within one business day.</p>
+  `;
+
+  const result = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: input.email,
+    subject: "Your free SmileFinder practice tools are ready",
+    text,
+    html,
+  });
+  if (result.error) {
+    console.error("[claim] Access-link email failed:", result.error);
+  }
+}
+
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) =>
     c === "&" ? "&amp;" : c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === '"' ? "&quot;" : "&#39;"
@@ -132,10 +177,11 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   const sql = getSql();
   let claimId: number;
+  const accessToken = generateAccessToken();
   try {
     const rows = (await sql.query(
-      `INSERT INTO claims (name, email, phone, npi, practice_name, address, website, message)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+      `INSERT INTO claims (name, email, phone, npi, practice_name, address, website, message, access_token)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
       [
         input.name,
         input.email,
@@ -145,6 +191,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         input.address,
         input.website ?? null,
         storedInput.message ?? null,
+        accessToken,
       ]
     )) as { id: number }[];
     claimId = rows[0].id;
@@ -161,5 +208,20 @@ export async function POST(req: NextRequest): Promise<Response> {
     console.error("[claim] Notification error:", err);
   }
 
-  return Response.json({ ok: true, id: claimId });
+  const accessUrl = `${SITE_URL}/api/tools-access?token=${encodeURIComponent(accessToken)}`;
+  try {
+    await sendAccessEmail(storedInput, accessUrl);
+  } catch (err) {
+    console.error("[claim] Access-link email error:", err);
+  }
+
+  const res = Response.json({ ok: true, id: claimId, toolsUrl: "/tools/member" });
+  // Grant instant self-serve access to the gated practice-management tools —
+  // separate from the manual review that still gates the public listing data.
+  const secureAttr = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  res.headers.append(
+    "Set-Cookie",
+    `${TOOLS_ACCESS_COOKIE}=${accessToken}; Path=/; Max-Age=${60 * 60 * 24 * 365}; HttpOnly; SameSite=Lax${secureAttr}`
+  );
+  return res;
 }
