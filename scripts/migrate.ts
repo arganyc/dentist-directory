@@ -285,10 +285,16 @@ async function main(): Promise<void> {
 
   if (RESET) {
     console.log("Dropping existing schema (--reset)...");
+    await sql`DROP TABLE IF EXISTS practice_listing_links`;
+    await sql`DROP TABLE IF EXISTS practice_memberships`;
+    await sql`DROP TABLE IF EXISTS user_sessions`;
+    await sql`DROP TABLE IF EXISTS practices`;
+    await sql`DROP TABLE IF EXISTS users`;
     await sql`DROP TABLE IF EXISTS dentists`;
   }
 
   console.log("Creating schema...");
+  await sql`CREATE EXTENSION IF NOT EXISTS pgcrypto`;
   await sql`
     CREATE TABLE IF NOT EXISTS dentists (
       id                      TEXT PRIMARY KEY,
@@ -334,6 +340,71 @@ async function main(): Promise<void> {
   // tools at /tools/member upon claim submission (separate from the manual
   // review that still gates edits to the public listing itself).
   await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS access_token TEXT UNIQUE`;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS users (
+      id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      email       TEXT UNIQUE NOT NULL,
+      name        TEXT,
+      created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS user_sessions (
+      id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id             UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      session_token_hash  TEXT UNIQUE NOT NULL,
+      expires_at          TIMESTAMPTZ NOT NULL,
+      created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS practices (
+      id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name        TEXT NOT NULL,
+      website     TEXT,
+      phone       TEXT,
+      address     TEXT,
+      city        TEXT,
+      state       TEXT,
+      zip_code    TEXT,
+      created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS practice_memberships (
+      id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      practice_id  UUID NOT NULL REFERENCES practices(id) ON DELETE CASCADE,
+      user_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      role         TEXT NOT NULL CHECK (role IN ('OWNER', 'STAFF', 'ADMIN')),
+      created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (practice_id, user_id)
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS practice_listing_links (
+      id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      practice_id  UUID NOT NULL REFERENCES practices(id) ON DELETE CASCADE,
+      dentist_id   TEXT NOT NULL REFERENCES dentists(id) ON DELETE CASCADE,
+      claim_id     INTEGER REFERENCES claims(id) ON DELETE SET NULL,
+      status       TEXT NOT NULL CHECK (status IN ('PENDING', 'VERIFIED', 'REJECTED', 'UNLINKED')),
+      verified_at  TIMESTAMPTZ,
+      created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (practice_id, dentist_id)
+    )
+  `;
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_practice_memberships_user_id ON practice_memberships(user_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_practice_memberships_practice_id ON practice_memberships(practice_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_practice_listing_links_practice_id ON practice_listing_links(practice_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_practice_listing_links_dentist_id ON practice_listing_links(dentist_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_practice_listing_links_claim_id ON practice_listing_links(claim_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_practice_listing_links_status ON practice_listing_links(status)`;
 
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_state_code ON dentists(state_code)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_state_city ON dentists(state_code, city)`;
