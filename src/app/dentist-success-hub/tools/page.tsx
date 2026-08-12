@@ -13,7 +13,11 @@ import {
 import {
   DENTIST_SUCCESS_HUB_CATEGORIES,
   DENTIST_SUCCESS_HUB_TOOLS,
-  getDentistSuccessHubToolsByCategory,
+  DENTIST_SUCCESS_HUB_TOOL_STATUSES,
+  DENTIST_SUCCESS_HUB_TOOL_TYPES,
+  getDentistSuccessHubEstimatedTimes,
+  searchDentistSuccessHubTools,
+  type DentistSuccessHubToolSearchFilters,
   type DentistSuccessHubTool,
 } from "@/lib/dentist-success-hub-tools";
 
@@ -61,7 +65,17 @@ const toolListJsonLd = {
   })),
 };
 
-export default function DentistSuccessHubToolsPage() {
+type ToolsPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+const estimatedTimes = getDentistSuccessHubEstimatedTimes();
+
+export default async function DentistSuccessHubToolsPage({ searchParams }: ToolsPageProps) {
+  const params = searchParams ? await searchParams : {};
+  const filters = filtersFromSearchParams(params);
+  const filteredTools = searchDentistSuccessHubTools(filters);
+  const hasFilters = Object.values(filters).some(Boolean);
   const activeCount = DENTIST_SUCCESS_HUB_TOOLS.filter((tool) => tool.status === "active").length;
   const comingSoonCount = DENTIST_SUCCESS_HUB_TOOLS.filter(
     (tool) => tool.status === "coming-soon"
@@ -85,7 +99,7 @@ export default function DentistSuccessHubToolsPage() {
         eyebrow="Tool directory"
         title="Explore every Dentist Success Hub tool"
         description="Browse practical workspaces for marketing, operations, finance, AI, local visibility, and practice growth. Tool pages are generated from the shared registry."
-        primaryAction={{ label: "Start with active tools", href: "#active-tools" }}
+        primaryAction={{ label: "Search tools", href: "#tool-results" }}
         secondaryAction={{ label: "Claim your practice", href: "/claim" }}
         meta={
           <div className="flex flex-wrap gap-3">
@@ -113,40 +127,62 @@ export default function DentistSuccessHubToolsPage() {
         </div>
       </ToolHero>
 
-      <section id="active-tools" className="border-t border-slate-200 py-10">
+      <section id="tool-results" className="border-t border-slate-200 py-10">
         <ToolHeader
-          eyebrow="Available now"
-          title="Active tools"
-          description="These tools are available as public placeholders or safe workflows. Calculator logic is intentionally not implemented in this routing phase."
+          eyebrow="Search and filter"
+          title="Find the right practice tool"
+          description="Search by title, keyword, or description, then filter by category, status, type, and estimated time."
         />
-        <ToolGrid className="mt-8">
-          {DENTIST_SUCCESS_HUB_TOOLS.filter((tool) => tool.status === "active").map((tool) => (
-            <ToolCard key={tool.slug} {...toolCardFromRegistry(tool)} />
-          ))}
-        </ToolGrid>
+        <ToolSearchForm filters={filters} />
       </section>
 
-      {DENTIST_SUCCESS_HUB_CATEGORIES.map((category) => {
-        const tools = getDentistSuccessHubToolsByCategory(category);
-        return (
-          <section
-            key={category}
-            id={categorySlug(category)}
-            className="border-t border-slate-200 py-10"
-          >
-            <ToolHeader
-              eyebrow={`${tools.length} tools`}
-              title={category}
-              description={categoryDescription(category)}
-            />
-            <ToolGrid className="mt-8">
-              {tools.map((tool) => (
-                <ToolCard key={tool.slug} {...toolCardFromRegistry(tool)} />
-              ))}
-            </ToolGrid>
-          </section>
-        );
-      })}
+      <section className="border-t border-slate-200 py-10">
+        <ToolHeader
+          eyebrow={`${filteredTools.length} ${filteredTools.length === 1 ? "result" : "results"}`}
+          title={hasFilters ? "Matching tools" : "All tools"}
+          description={
+            hasFilters
+              ? "Results are filtered directly from the Dentist Success Hub tool registry."
+              : "Every card below is generated from the Dentist Success Hub tool registry."
+          }
+          actions={
+            hasFilters ? (
+              <Link href="/dentist-success-hub/tools" className="text-sm font-bold text-cyan-700 hover:text-cyan-900">
+                Clear filters
+              </Link>
+            ) : null
+          }
+        />
+
+        {filteredTools.length === 0 ? (
+          <div className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-8">
+            <h2 className="text-xl font-bold text-slate-950">No matching tools</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Try a broader search or clear one of the filters.
+            </p>
+          </div>
+        ) : (
+          DENTIST_SUCCESS_HUB_CATEGORIES.map((category) => {
+            const tools = filteredTools.filter((tool) => tool.category === category);
+            if (tools.length === 0) return null;
+
+            return (
+              <section key={category} id={categorySlug(category)} className="pt-10">
+                <ToolHeader
+                  eyebrow={`${tools.length} tools`}
+                  title={category}
+                  description={categoryDescription(category)}
+                />
+                <ToolGrid className="mt-8">
+                  {tools.map((tool) => (
+                    <ToolCard key={tool.slug} {...toolCardFromRegistry(tool)} />
+                  ))}
+                </ToolGrid>
+              </section>
+            );
+          })
+        )}
+      </section>
 
       <ToolFooterCTA
         title="Build your practice workspace one tool at a time"
@@ -156,6 +192,116 @@ export default function DentistSuccessHubToolsPage() {
       />
     </ToolPage>
   );
+}
+
+function ToolSearchForm({ filters }: { filters: DentistSuccessHubToolSearchFilters }) {
+  return (
+    <form action="/dentist-success-hub/tools" className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-5">
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_auto]">
+        <label className="text-sm font-bold text-slate-800">
+          Search
+          <input
+            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            type="search"
+            name="q"
+            defaultValue={filters.query}
+            placeholder="SEO, no-show, reviews"
+          />
+        </label>
+
+        <label className="text-sm font-bold text-slate-800">
+          Category
+          <select
+            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            name="category"
+            defaultValue={filters.category}
+          >
+            <option value="">All</option>
+            {DENTIST_SUCCESS_HUB_CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="text-sm font-bold text-slate-800">
+          Status
+          <select
+            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            name="status"
+            defaultValue={filters.status}
+          >
+            <option value="">All</option>
+            {DENTIST_SUCCESS_HUB_TOOL_STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {statusLabels[status]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="text-sm font-bold text-slate-800">
+          Type
+          <select
+            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            name="toolType"
+            defaultValue={filters.toolType}
+          >
+            <option value="">All</option>
+            {DENTIST_SUCCESS_HUB_TOOL_TYPES.map((toolType) => (
+              <option key={toolType} value={toolType}>
+                {titleCase(toolType)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="text-sm font-bold text-slate-800">
+          Time
+          <select
+            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            name="estimatedTime"
+            defaultValue={filters.estimatedTime}
+          >
+            <option value="">All</option>
+            {estimatedTimes.map((estimatedTime) => (
+              <option key={estimatedTime} value={estimatedTime}>
+                {estimatedTime}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="flex items-end">
+          <button
+            type="submit"
+            className="w-full rounded-full bg-slate-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-cyan-800"
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
+
+function filtersFromSearchParams(
+  searchParams: Record<string, string | string[] | undefined>
+): DentistSuccessHubToolSearchFilters {
+  return {
+    query: firstParam(searchParams.q),
+    category: firstParam(searchParams.category),
+    status: firstParam(searchParams.status),
+    toolType: firstParam(searchParams.toolType),
+    estimatedTime: firstParam(searchParams.estimatedTime),
+  };
+}
+
+function firstParam(value: string | string[] | undefined): string | undefined {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const normalizedValue = rawValue?.trim();
+  return normalizedValue || undefined;
 }
 
 function toolCardFromRegistry(tool: DentistSuccessHubTool) {
@@ -188,4 +334,11 @@ function categoryDescription(category: DentistSuccessHubTool["category"]): strin
   };
 
   return descriptions[category];
+}
+
+function titleCase(value: string): string {
+  return value
+    .split("-")
+    .map((word) => `${word.slice(0, 1).toUpperCase()}${word.slice(1)}`)
+    .join(" ");
 }

@@ -328,7 +328,7 @@ function BetaPreview({ tool }: { tool: DentistSuccessHubTool }) {
 function primaryActionForTool(tool: DentistSuccessHubTool) {
   if (tool.status === "premium") return { label: "Create free account", href: "/login" };
   if (tool.status === "coming-soon") {
-    return { label: "Browse active tools", href: "/dentist-success-hub/tools#active-tools" };
+    return { label: "Browse active tools", href: "/dentist-success-hub/tools?status=active#tool-results" };
   }
   return { label: "Preview workspace", href: "#workspace" };
 }

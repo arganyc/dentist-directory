@@ -8,7 +8,9 @@ import {
   DENTIST_SUCCESS_HUB_TOOL_STATUSES,
   DENTIST_SUCCESS_HUB_TOOL_TYPES,
   getDentistSuccessHubTool,
+  getDentistSuccessHubEstimatedTimes,
   getDentistSuccessHubToolsByCategory,
+  searchDentistSuccessHubTools,
   validateToolRegistry,
   type DentistSuccessHubTool,
 } from "../src/lib/dentist-success-hub-tools.ts";
@@ -86,6 +88,47 @@ test("tool registry lookup helpers return deterministic slices", () => {
     aiTools.map((tool) => tool.slug),
     DENTIST_SUCCESS_HUB_TOOLS.filter((tool) => tool.category === "AI").map((tool) => tool.slug)
   );
+});
+
+test("tool registry search matches title keywords and description", () => {
+  assert.deepEqual(
+    searchDentistSuccessHubTools({ query: "No-Show" }).map((tool) => tool.slug),
+    ["no-show-cost-calculator"]
+  );
+  assert.ok(
+    searchDentistSuccessHubTools({ query: "Google rankings" }).some(
+      (tool) => tool.slug === "local-seo-audit"
+    )
+  );
+  assert.ok(
+    searchDentistSuccessHubTools({ query: "patient conversion" }).some(
+      (tool) => tool.slug === "website-audit"
+    )
+  );
+});
+
+test("tool registry filters by category status type and estimated time", () => {
+  assert.deepEqual(
+    searchDentistSuccessHubTools({ category: "Operations", status: "active" }).map(
+      (tool) => tool.slug
+    ),
+    ["no-show-cost-calculator"]
+  );
+  assert.ok(searchDentistSuccessHubTools({ toolType: "audit" }).every((tool) => tool.toolType === "audit"));
+  assert.ok(searchDentistSuccessHubTools({ status: "premium" }).every((tool) => tool.status === "premium"));
+  assert.ok(
+    searchDentistSuccessHubTools({ estimatedTime: "3 min" }).every(
+      (tool) => tool.estimatedTime === "3 min"
+    )
+  );
+});
+
+test("tool registry estimated time options are derived from tool metadata", () => {
+  const estimatedTimes = getDentistSuccessHubEstimatedTimes();
+
+  assert.deepEqual(estimatedTimes, Array.from(new Set(DENTIST_SUCCESS_HUB_TOOLS.map((tool) => tool.estimatedTime))).sort(
+    (left, right) => Number.parseInt(left, 10) - Number.parseInt(right, 10)
+  ));
 });
 
 test("tool registry does not create routes or tool implementations", () => {

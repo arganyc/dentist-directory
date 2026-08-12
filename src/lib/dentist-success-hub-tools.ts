@@ -48,6 +48,14 @@ export type ToolRegistryValidationResult = {
   errors: string[];
 };
 
+export type DentistSuccessHubToolSearchFilters = {
+  query?: string;
+  category?: string;
+  status?: string;
+  toolType?: string;
+  estimatedTime?: string;
+};
+
 export const DENTIST_SUCCESS_HUB_TOOLS = [
   {
     slug: "local-seo-audit",
@@ -673,4 +681,48 @@ export function getDentistSuccessHubToolsByCategory(
   category: DentistSuccessHubCategory
 ): DentistSuccessHubTool[] {
   return DENTIST_SUCCESS_HUB_TOOLS.filter((tool) => tool.category === category);
+}
+
+export function getDentistSuccessHubEstimatedTimes(
+  tools: readonly DentistSuccessHubTool[] = DENTIST_SUCCESS_HUB_TOOLS
+): string[] {
+  return Array.from(new Set(tools.map((tool) => tool.estimatedTime))).sort((left, right) => {
+    const leftMinutes = Number.parseInt(left, 10);
+    const rightMinutes = Number.parseInt(right, 10);
+    if (Number.isNaN(leftMinutes) || Number.isNaN(rightMinutes)) return left.localeCompare(right);
+    return leftMinutes - rightMinutes;
+  });
+}
+
+export function searchDentistSuccessHubTools(
+  filters: DentistSuccessHubToolSearchFilters,
+  tools: readonly DentistSuccessHubTool[] = DENTIST_SUCCESS_HUB_TOOLS
+): DentistSuccessHubTool[] {
+  const query = normalizeSearchTerm(filters.query);
+
+  return tools.filter((tool) => {
+    if (query && !toolMatchesQuery(tool, query)) return false;
+    if (filters.category && tool.category !== filters.category) return false;
+    if (filters.status && tool.status !== filters.status) return false;
+    if (filters.toolType && tool.toolType !== filters.toolType) return false;
+    if (filters.estimatedTime && tool.estimatedTime !== filters.estimatedTime) return false;
+    return true;
+  });
+}
+
+function toolMatchesQuery(tool: DentistSuccessHubTool, query: string): boolean {
+  const searchableText = [
+    tool.title,
+    tool.shortDescription,
+    tool.seoDescription,
+    ...tool.keywords,
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return searchableText.includes(query);
+}
+
+function normalizeSearchTerm(value: string | undefined): string {
+  return value?.trim().toLowerCase() ?? "";
 }

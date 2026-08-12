@@ -22,13 +22,26 @@ test("tool directory route is generated from the registry", () => {
 
   assert.match(source, /DENTIST_SUCCESS_HUB_TOOLS/);
   assert.match(source, /DENTIST_SUCCESS_HUB_CATEGORIES/);
-  assert.match(source, /getDentistSuccessHubToolsByCategory/);
+  assert.match(source, /searchDentistSuccessHubTools/);
+  assert.match(source, /getDentistSuccessHubEstimatedTimes/);
   assert.match(source, /ToolGrid/);
   assert.match(source, /ToolCard/);
 
   for (const category of DENTIST_SUCCESS_HUB_CATEGORIES) {
     assert.ok(getDentistSuccessHubToolsByCategory(category).length > 0);
   }
+});
+
+test("tool directory route exposes registry-backed search and filters", () => {
+  const source = readFileSync(toolsDirectoryRoute, "utf8");
+
+  assert.match(source, /name="q"/);
+  assert.match(source, /name="category"/);
+  assert.match(source, /name="status"/);
+  assert.match(source, /name="toolType"/);
+  assert.match(source, /name="estimatedTime"/);
+  assert.match(source, /filtersFromSearchParams/);
+  assert.match(source, /filteredTools/);
 });
 
 test("tool detail route loads metadata from registry", () => {
