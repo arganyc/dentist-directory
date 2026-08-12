@@ -11,6 +11,7 @@ type ClaimInput = {
   email: string;
   phone: string;
   npi: string;
+  dentistId?: string;
   practiceName: string;
   address: string;
   website?: string;
@@ -160,6 +161,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     email: pickString(obj.email),
     phone: pickString(obj.phone),
     npi: pickString(obj.npi),
+    dentistId: pickString(obj.dentistId) || undefined,
     practiceName: pickString(obj.practiceName),
     address: pickString(obj.address),
     website: pickString(obj.website) || undefined,
@@ -186,17 +188,27 @@ export async function POST(req: NextRequest): Promise<Response> {
   const storedInput = { ...input, message: storedMessage || undefined };
 
   const sql = getSql();
+  if (input.dentistId) {
+    const dentistRows = (await sql.query(`SELECT id FROM dentists WHERE id = $1 LIMIT 1`, [
+      input.dentistId,
+    ])) as { id: string }[];
+    if (dentistRows.length === 0) {
+      return badRequest("Dentist listing not found");
+    }
+  }
+
   let claimId: number;
   const accessToken = generateAccessToken();
   try {
     const rows = (await sql.query(
-      `INSERT INTO claims (name, email, phone, npi, practice_name, address, website, message, access_token)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+      `INSERT INTO claims (name, email, phone, npi, dentist_id, practice_name, address, website, message, access_token)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
       [
         input.name,
         input.email,
         input.phone,
         input.npi,
+        input.dentistId ?? null,
         input.practiceName,
         input.address,
         input.website ?? null,

@@ -7,6 +7,7 @@ export type DentistOSClaimBridgeClaim = {
   email: string;
   phone: string;
   npi: string;
+  dentist_id: string | null;
   practice_name: string;
   address: string;
   website: string | null;
@@ -74,7 +75,9 @@ export async function linkClaimToDentistOS(input: {
   const claim = await input.repository.getClaimByAccessToken(token);
   if (!claim) return failure("INVALID_CLAIM_TOKEN");
 
-  const dentistId = claim.npi.trim();
+  const dentistId = resolveClaimDentistId(claim);
+  if (!dentistId) return failure("LISTING_NOT_FOUND");
+
   if (claim.email.trim().toLowerCase() !== input.user.email.trim().toLowerCase()) {
     return failure("CLAIM_EMAIL_MISMATCH", null, dentistId);
   }
@@ -177,6 +180,14 @@ export function listingStatusFromClaimStatus(
     default:
       return "PENDING";
   }
+}
+
+export function resolveClaimDentistId(claim: DentistOSClaimBridgeClaim): string | null {
+  const explicitDentistId = claim.dentist_id?.trim();
+  if (explicitDentistId) return explicitDentistId;
+
+  const legacyNpi = claim.npi.trim();
+  return /^\d{10}$/.test(legacyNpi) ? legacyNpi : null;
 }
 
 function failure(

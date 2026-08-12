@@ -30,6 +30,7 @@ export class PostgresDentistOSClaimBridgeRepository
           email,
           phone,
           npi,
+          dentist_id,
           practice_name,
           address,
           website,

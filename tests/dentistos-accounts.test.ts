@@ -60,6 +60,9 @@ test("migration stores only hashed session tokens with expiration", () => {
 
 test("migration keeps claim-token member tools bridge and adds DentistOS link metadata", () => {
   assert.match(migrationSource, /access_token TEXT UNIQUE/);
+  assert.match(migrationSource, /dentist_id\s+TEXT REFERENCES dentists\(id\) ON DELETE SET NULL/);
+  assert.match(migrationSource, /ALTER TABLE claims ADD COLUMN IF NOT EXISTS dentist_id TEXT/);
+  assert.match(migrationSource, /claims_dentist_id_fkey/);
   assert.match(migrationSource, /dentistos_user_id UUID/);
   assert.match(migrationSource, /dentistos_practice_id UUID/);
   assert.match(migrationSource, /dentistos_linked_at TIMESTAMPTZ/);

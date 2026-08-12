@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ClaimForm from "./ClaimForm";
+import { getDentistBySlug } from "@/lib/dentists-data";
 
 export const metadata = {
   title: "Claim or Add Your Practice",
@@ -55,8 +56,10 @@ export default async function ClaimPage(props: PageProps<"/claim">) {
   const sp = await props.searchParams;
   const cityRaw = pickString(sp.city).trim();
   const sourceRaw = pickString(sp.source).trim();
+  const practiceSlug = pickString(sp.practice).trim();
   const city = cityRaw || "your area";
   const monthlySearches = syntheticMonthlySearches(cityRaw);
+  const claimedListing = practiceSlug ? await getDentistBySlug(practiceSlug) : null;
 
   return (
     <div className="bg-slate-50">
@@ -108,7 +111,12 @@ export default async function ClaimPage(props: PageProps<"/claim">) {
       </section>
 
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1fr_320px] lg:px-8">
-        <ClaimForm campaignCity={cityRaw} campaignSource={sourceRaw} />
+        <ClaimForm
+          campaignCity={cityRaw}
+          campaignSource={sourceRaw}
+          dentistId={claimedListing?.id ?? ""}
+          listingName={claimedListing?.practiceName || claimedListing?.name || ""}
+        />
 
         <aside className="space-y-5">
           <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">

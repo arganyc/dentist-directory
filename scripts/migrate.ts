@@ -327,6 +327,7 @@ async function main(): Promise<void> {
       email           TEXT NOT NULL,
       phone           TEXT NOT NULL,
       npi             TEXT NOT NULL,
+      dentist_id      TEXT REFERENCES dentists(id) ON DELETE SET NULL,
       practice_name   TEXT NOT NULL,
       address         TEXT NOT NULL,
       website         TEXT,
@@ -341,9 +342,27 @@ async function main(): Promise<void> {
   // tools at /tools/member upon claim submission (separate from the manual
   // review that still gates edits to the public listing itself).
   await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS access_token TEXT UNIQUE`;
+  await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS dentist_id TEXT`;
+  await sql`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'claims_dentist_id_fkey'
+      ) THEN
+        ALTER TABLE claims
+          ADD CONSTRAINT claims_dentist_id_fkey
+          FOREIGN KEY (dentist_id)
+          REFERENCES dentists(id)
+          ON DELETE SET NULL;
+      END IF;
+    END $$;
+  `;
   await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS dentistos_user_id UUID`;
   await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS dentistos_practice_id UUID`;
   await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS dentistos_linked_at TIMESTAMPTZ`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_claims_dentist_id ON claims(dentist_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_claims_dentistos_user_id ON claims(dentistos_user_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_claims_dentistos_practice_id ON claims(dentistos_practice_id)`;
 

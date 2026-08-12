@@ -317,7 +317,7 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
                 leads.
               </p>
               <Link
-                href="/claim"
+                href={`/claim?practice=${encodeURIComponent(d.slug)}`}
                 className="mt-4 inline-block rounded-md bg-white px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
               >
                 Claim listing →

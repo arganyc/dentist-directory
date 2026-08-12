@@ -6,6 +6,7 @@ import type { DentistOSUser } from "../src/lib/dentistos-auth.ts";
 import {
   linkClaimToDentistOS,
   listingStatusFromClaimStatus,
+  resolveClaimDentistId,
   type DentistOSClaimBridgeClaim,
   type DentistOSClaimBridgeRepository,
 } from "../src/lib/dentistos-claim-bridge.ts";
@@ -45,6 +46,44 @@ test("valid claim link creates practice membership listing link and claim bridge
   assert.equal(repo.markedClaims[0].userId, "user-1");
 });
 
+test("claim with explicit dentist_id links a non-NPI public listing", async () => {
+  const repo = new MemoryClaimBridgeRepository({
+    claim: validClaim({ dentist_id: "3", npi: "1234567890", status: "verified" }),
+    dentistExists: true,
+  });
+
+  const result = await linkClaimToDentistOS({
+    user,
+    token: "claim-token",
+    repository: repo,
+    now: NOW,
+  });
+
+  assert.equal(result.success, true);
+  assert.equal(result.status, "LINKED");
+  assert.equal(result.dentistId, "3");
+  assert.equal(repo.listingLinks[0].dentistId, "3");
+  assert.equal(repo.listingLinks[0].status, "VERIFIED");
+});
+
+test("DentistOS-created dentist id 3 can be claimed through canonical dentist_id", async () => {
+  const repo = new MemoryClaimBridgeRepository({
+    claim: validClaim({ dentist_id: "3" }),
+    dentistExists: true,
+  });
+
+  const result = await linkClaimToDentistOS({
+    user,
+    token: "claim-token",
+    expectedDentistId: "3",
+    repository: repo,
+  });
+
+  assert.equal(result.success, true);
+  assert.equal(result.dentistId, "3");
+  assert.equal(repo.listingLinks[0].dentistId, "3");
+});
+
 test("invalid claim token is blocked", async () => {
   const repo = new MemoryClaimBridgeRepository({ claim: null, dentistExists: true });
 
@@ -70,9 +109,34 @@ test("expired claim token is not applicable to the current legacy claim model", 
   assert.match(migrationSource, /access_token TEXT UNIQUE/);
 });
 
+test("legacy claim with null dentist_id uses valid 10-digit NPI fallback", () => {
+  assert.equal(
+    resolveClaimDentistId(validClaim({ dentist_id: null, npi: "1234567890" })),
+    "1234567890"
+  );
+});
+
+test("invalid non-10-digit npi with null dentist_id is rejected", async () => {
+  const repo = new MemoryClaimBridgeRepository({
+    claim: validClaim({ dentist_id: null, npi: "3" }),
+    dentistExists: true,
+  });
+
+  const result = await linkClaimToDentistOS({
+    user,
+    token: "claim-token",
+    repository: repo,
+  });
+
+  assert.equal(result.success, false);
+  assert.equal(result.status, "LISTING_NOT_FOUND");
+  assert.equal(result.dentistId, null);
+  assert.equal(repo.listingLinks.length, 0);
+});
+
 test("wrong-listing attempt is blocked", async () => {
   const repo = new MemoryClaimBridgeRepository({
-    claim: validClaim(),
+    claim: validClaim({ dentist_id: "3" }),
     dentistExists: true,
   });
 
@@ -193,6 +257,30 @@ test("claim status maps to actual listing verification state", () => {
   assert.equal(listingStatusFromClaimStatus("anything-else"), "PENDING");
 });
 
+test("claim creation stores canonical dentist_id without changing member tools access", () => {
+  const claimRouteSource = readFileSync(
+    new URL("../src/app/api/claim/route.ts", import.meta.url),
+    "utf8"
+  );
+  const claimPageSource = readFileSync(new URL("../src/app/claim/page.tsx", import.meta.url), "utf8");
+  const claimFormSource = readFileSync(
+    new URL("../src/app/claim/ClaimForm.tsx", import.meta.url),
+    "utf8"
+  );
+  const profileSource = readFileSync(
+    new URL("../src/app/dentists/[slug]/page.tsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(claimRouteSource, /dentistId: pickString\(obj\.dentistId\)/);
+  assert.match(claimRouteSource, /SELECT id FROM dentists WHERE id = \$1 LIMIT 1/);
+  assert.match(claimRouteSource, /INSERT INTO claims \(name, email, phone, npi, dentist_id/);
+  assert.match(claimRouteSource, /toolsUrl: "\/tools\/member"/);
+  assert.match(claimPageSource, /getDentistBySlug\(practiceSlug\)/);
+  assert.match(claimFormSource, /dentistId,/);
+  assert.match(profileSource, /\/claim\?practice=/);
+});
+
 test("claim link endpoint uses authenticated user and preserves old member-tools access", async () => {
   const repo = new MemoryClaimBridgeRepository({
     claim: validClaim({ status: "pending" }),
@@ -250,6 +338,7 @@ function validClaim(
     email: "owner@example.com",
     phone: "703-555-0100",
     npi: "1234567890",
+    dentist_id: null,
     practice_name: "Example Dental",
     address: "123 Main St",
     website: "https://example.com",

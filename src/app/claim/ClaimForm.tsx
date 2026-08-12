@@ -7,9 +7,16 @@ type Status = "idle" | "submitting" | "success" | "error";
 type Props = {
   campaignCity?: string;
   campaignSource?: string;
+  dentistId?: string;
+  listingName?: string;
 };
 
-export default function ClaimForm({ campaignCity = "", campaignSource = "" }: Props) {
+export default function ClaimForm({
+  campaignCity = "",
+  campaignSource = "",
+  dentistId = "",
+  listingName = "",
+}: Props) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -25,6 +32,7 @@ export default function ClaimForm({ campaignCity = "", campaignSource = "" }: Pr
       email: fd.get("email"),
       phone: fd.get("phone"),
       npi: fd.get("npi"),
+      dentistId,
       practiceName: fd.get("practiceName"),
       address: fd.get("address"),
       website: fd.get("website") || "",
@@ -102,6 +110,13 @@ export default function ClaimForm({ campaignCity = "", campaignSource = "" }: Pr
         <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
           This request is tagged for the <span className="font-semibold">{campaignCity}</span>{" "}
           dentist outreach campaign.
+        </div>
+      )}
+
+      {dentistId && (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+          This claim will be connected to{" "}
+          <span className="font-semibold">{listingName || "the selected directory listing"}</span>.
         </div>
       )}
 
