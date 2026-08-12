@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import CancellationLossCalculator from "@/app/tools/dental-cancellation-loss-calculator/CancellationLossCalculator";
+import NoShowCostCalculatorWorkspace from "@/components/no-show-cost-calculator-workspace";
 import {
   ToolBreadcrumb,
   ToolCard,
@@ -100,8 +100,7 @@ export default async function DentistSuccessHubToolDetailPage({ params }: RouteP
           {tool.status === "beta" && <BetaPreview tool={tool} />}
 
           <ToolDisclaimer>
-            This page is a product workspace shell. It does not provide clinical, legal, financial, or tax advice,
-            and this routing phase does not implement calculator or generator logic.
+            {disclaimerForTool(tool)}
           </ToolDisclaimer>
         </main>
 
@@ -192,35 +191,6 @@ function ActiveToolWorkspace({ tool }: { tool: DentistSuccessHubTool }) {
   }
 
   return <ActiveToolPlaceholder tool={tool} />;
-}
-
-function NoShowCostCalculatorWorkspace() {
-  return (
-    <section className="space-y-6">
-      <ToolHeader
-        eyebrow="Active calculator"
-        title="Calculate missed-appointment cost"
-        description="Adjust the inputs below to estimate weekly, monthly, and annual production lost to cancellations, no-shows, and unfilled chair time."
-      />
-
-      <CancellationLossCalculator />
-
-      <ToolGrid columns="two">
-        <ToolCard
-          title="Save reports in DentistOS"
-          description="Saved report history is planned for a later phase. This version keeps calculations in the browser and does not persist practice data."
-          badge="Future"
-          href="/login"
-        />
-        <ToolCard
-          title="Claim your listing"
-          description="Connect your public listing so future DentistOS workspaces can tie reports and recommendations to the correct practice."
-          badge="Free"
-          href="/claim?source=no-show-cost-calculator"
-        />
-      </ToolGrid>
-    </section>
-  );
 }
 
 function ActiveToolPlaceholder({ tool }: { tool: DentistSuccessHubTool }) {
@@ -331,8 +301,10 @@ function faqForTool(tool: DentistSuccessHubTool): ToolFAQItem[] {
     {
       question: `Is ${tool.title} available today?`,
       answer:
-        tool.status === "active"
-          ? "The route and placeholder workspace are available now. Full tool execution is intentionally deferred."
+        tool.slug === "no-show-cost-calculator"
+          ? "Yes. This calculator is available now and uses the same shared calculation logic as the existing public cancellation-loss calculator."
+          : tool.status === "active"
+            ? "The route and placeholder workspace are available now. Full tool execution is intentionally deferred."
           : "This page is a preview. Full tool execution is intentionally deferred.",
     },
     {
@@ -345,4 +317,12 @@ function faqForTool(tool: DentistSuccessHubTool): ToolFAQItem[] {
         "No. These tool pages do not modify public dentist profiles, claims, publishing data, or DentistOS account records.",
     },
   ];
+}
+
+function disclaimerForTool(tool: DentistSuccessHubTool) {
+  if (tool.slug === "no-show-cost-calculator") {
+    return "This calculator is an estimate for practice business planning. It does not provide clinical, legal, financial, or tax advice, and results are not saved to DentistOS in this phase.";
+  }
+
+  return "This page is a product workspace shell. It does not provide clinical, legal, financial, or tax advice, and this routing phase does not implement calculator or generator logic.";
 }

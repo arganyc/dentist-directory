@@ -6,7 +6,7 @@ import {
   calculateNoShowCost,
   noShowCostCalculatorInitialInputs,
   type NoShowCostCalculatorInputs,
-} from "@/lib/no-show-cost-calculator";
+} from "@/lib/calculators/no-show-cost";
 
 type FieldConfig = {
   key: keyof NoShowCostCalculatorInputs;

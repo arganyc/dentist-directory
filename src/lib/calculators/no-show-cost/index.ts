@@ -1,11 +1,12 @@
 export {
   calculateNoShowCost,
-  getNoShowCostRecommendations,
   noShowCostCalculatorInitialInputs,
   sanitizeNoShowCostInputs,
-} from "./calculators/no-show-cost";
+} from "./calculator";
+export { getNoShowCostRecommendations } from "./recommendations";
 export type {
   NoShowCostCalculatorInputs,
   NoShowCostCalculatorResults,
   NoShowCostRecommendation,
-} from "./calculators/no-show-cost";
+} from "./types";
+
