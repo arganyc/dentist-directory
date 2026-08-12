@@ -1,29 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { stateNameByCode, US_STATES } from "./lib/dentists";
-
-function slugify(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/\+/g, " ")
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-function codeFromParam(stateParam: string): string | undefined {
-  const param = stateParam.trim();
-  if (!param) return undefined;
-  if (param.length === 2) return param.toUpperCase();
-  const normalized = param.replace(/-/g, " ").toLowerCase();
-  const found = US_STATES.find((s) => s.name.toLowerCase() === normalized);
-  return found?.code;
-}
-
-function stateSlugFromCode(code: string): string {
-  return slugify(stateNameByCode(code));
-}
+import { slugify } from "./lib/dentists";
+import {
+  codeFromDentistsPathParam,
+  stateListingPathForDentistsSegment,
+  stateSlugFromDentistsCode,
+} from "./lib/dentists-route-resolution";
 
 export function proxy(request: NextRequest) {
   const url = request.nextUrl.clone();
@@ -35,8 +16,8 @@ export function proxy(request: NextRequest) {
   const pathSegments = pathname.split("/").filter(Boolean);
 
   if (pathname === "/dentists" && hasStateQuery) {
-    const stateCode = codeFromParam(stateQuery) ?? stateQuery.toUpperCase();
-    const stateSlug = stateSlugFromCode(stateCode);
+    const stateCode = codeFromDentistsPathParam(stateQuery) ?? stateQuery.toUpperCase();
+    const stateSlug = stateSlugFromDentistsCode(stateCode);
     if (hasCityQuery && cityQuery) {
       const citySlug = slugify(cityQuery);
       const dest = new URL(`/dentists/${stateSlug}/${citySlug}`, request.url);
@@ -58,8 +39,11 @@ export function proxy(request: NextRequest) {
       return NextResponse.next();
     }
 
-    const stateCode = codeFromParam(stateSegment) ?? stateSegment.toUpperCase();
-    const canonicalStateSlug = stateSlugFromCode(stateCode);
+    const internalStatePath = stateListingPathForDentistsSegment(stateSegment);
+    if (!internalStatePath) {
+      return NextResponse.next();
+    }
+    const canonicalStateSlug = internalStatePath.split("/").at(-1) ?? "";
 
     if (pathSegments.length === 2) {
       if (hasCityQuery && cityQuery) {
@@ -70,7 +54,7 @@ export function proxy(request: NextRequest) {
       }
 
       const internalUrl = url.clone();
-      internalUrl.pathname = `/dentists/state/${canonicalStateSlug}`;
+      internalUrl.pathname = internalStatePath;
       return NextResponse.rewrite(internalUrl);
     }
 

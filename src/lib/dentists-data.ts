@@ -1,60 +1,13 @@
 import "server-only";
 import { type Dentist, US_STATES } from "./dentists";
 import { getSql } from "./db";
-
-type Row = {
-  id: string;
-  slug: string;
-  name: string;
-  credentials: string;
-  specialty: string;
-  practice_name: string;
-  street: string;
-  city: string;
-  state: string;
-  state_code: string;
-  zip: string;
-  phone: string;
-  rating: number | string;
-  review_count: number;
-  accepting_new_patients: boolean;
-  years_experience: number;
-  is_premium: boolean;
-};
-
-function rowToDentist(r: Row): Dentist {
-  return {
-    id: r.id,
-    slug: r.slug,
-    name: r.name,
-    credentials: r.credentials,
-    specialty: r.specialty as Dentist["specialty"],
-    practiceName: r.practice_name,
-    address: {
-      street: r.street,
-      city: r.city,
-      state: r.state,
-      stateCode: r.state_code,
-      zip: r.zip,
-    },
-    phone: r.phone,
-    email: "",
-    website: "",
-    rating: typeof r.rating === "string" ? parseFloat(r.rating) : r.rating,
-    reviewCount: r.review_count,
-    acceptingNewPatients: r.accepting_new_patients,
-    yearsExperience: r.years_experience,
-    bio: "",
-    education: [],
-    languages: [],
-    insurance: [],
-    hours: [],
-    isPremium: r.is_premium,
-  };
-}
-
-const ALL_COLS =
-  "id, slug, name, credentials, specialty, practice_name, street, city, state, state_code, zip, phone, rating, review_count, accepting_new_patients, years_experience, is_premium";
+import {
+  DENTIST_PROFILE_COLS as ALL_COLS,
+  getDentistByIdWithSql,
+  getDentistBySlugWithSql,
+  rowToDentist,
+  type DentistRow as Row,
+} from "./dentist-profile-lookup";
 
 export async function getTotalDentistCount(): Promise<number> {
   const sql = getSql();
@@ -85,15 +38,11 @@ export async function getCitiesForState(stateCode: string): Promise<string[]> {
 }
 
 export async function getDentistById(npi: string): Promise<Dentist | undefined> {
-  const sql = getSql();
-  const rows = (await sql.query(`SELECT ${ALL_COLS} FROM dentists WHERE id = $1 LIMIT 1`, [npi])) as Row[];
-  return rows[0] ? rowToDentist(rows[0]) : undefined;
+  return getDentistByIdWithSql(npi, getSql());
 }
 
 export async function getDentistBySlug(slug: string): Promise<Dentist | undefined> {
-  const match = slug.match(/(\d{10})$/);
-  if (!match) return undefined;
-  return getDentistById(match[1]);
+  return getDentistBySlugWithSql(slug, getSql());
 }
 
 export type SearchOpts = {
