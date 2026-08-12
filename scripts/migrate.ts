@@ -341,6 +341,11 @@ async function main(): Promise<void> {
   // tools at /tools/member upon claim submission (separate from the manual
   // review that still gates edits to the public listing itself).
   await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS access_token TEXT UNIQUE`;
+  await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS dentistos_user_id UUID`;
+  await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS dentistos_practice_id UUID`;
+  await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS dentistos_linked_at TIMESTAMPTZ`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_claims_dentistos_user_id ON claims(dentistos_user_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_claims_dentistos_practice_id ON claims(dentistos_practice_id)`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS users (
@@ -421,6 +426,7 @@ async function main(): Promise<void> {
   await sql`CREATE INDEX IF NOT EXISTS idx_practice_listing_links_dentist_id ON practice_listing_links(dentist_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_practice_listing_links_claim_id ON practice_listing_links(claim_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_practice_listing_links_status ON practice_listing_links(status)`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_practice_listing_links_active_dentist ON practice_listing_links(dentist_id) WHERE status IN ('PENDING', 'VERIFIED')`;
 
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_state_code ON dentists(state_code)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_state_city ON dentists(state_code, city)`;

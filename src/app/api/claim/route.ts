@@ -87,7 +87,11 @@ async function sendNotification(input: ClaimInput, claimId: number): Promise<voi
   }
 }
 
-async function sendAccessEmail(input: ClaimInput, accessUrl: string): Promise<void> {
+async function sendAccessEmail(
+  input: ClaimInput,
+  accessUrl: string,
+  dentistOSLinkUrl: string
+): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.warn("[claim] RESEND_API_KEY not set — skipping access-link email");
@@ -105,6 +109,10 @@ async function sendAccessEmail(input: ClaimInput, accessUrl: string): Promise<vo
     ``,
     accessUrl,
     ``,
+    `You can also connect this claim to your DentistOS practice workspace:`,
+    ``,
+    dentistOSLinkUrl,
+    ``,
     `We'll separately verify and update your public listing information`,
     `within one business day.`,
   ].join("\n");
@@ -115,6 +123,8 @@ async function sendAccessEmail(input: ClaimInput, accessUrl: string): Promise<vo
     patient acquisition cost, staffing, equipment ROI, and insurance write-off calculators)
     are ready now:</p>
     <p><a href="${escapeHtml(accessUrl)}">${escapeHtml(accessUrl)}</a></p>
+    <p>You can also connect this claim to your DentistOS practice workspace:</p>
+    <p><a href="${escapeHtml(dentistOSLinkUrl)}">${escapeHtml(dentistOSLinkUrl)}</a></p>
     <p>We'll separately verify and update your public listing information within one business day.</p>
   `;
 
@@ -209,8 +219,9 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   const accessUrl = `${SITE_URL}/api/tools-access?token=${encodeURIComponent(accessToken)}`;
+  const dentistOSLinkUrl = `${SITE_URL}/dentistos/link-claim?token=${encodeURIComponent(accessToken)}`;
   try {
-    await sendAccessEmail(storedInput, accessUrl);
+    await sendAccessEmail(storedInput, accessUrl, dentistOSLinkUrl);
   } catch (err) {
     console.error("[claim] Access-link email error:", err);
   }

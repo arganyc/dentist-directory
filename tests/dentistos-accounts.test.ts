@@ -58,6 +58,13 @@ test("migration stores only hashed session tokens with expiration", () => {
   assert.doesNotMatch(migrationSource, /raw_session_token|raw_magic_token|session_token\s+TEXT/i);
 });
 
+test("migration keeps claim-token member tools bridge and adds DentistOS link metadata", () => {
+  assert.match(migrationSource, /access_token TEXT UNIQUE/);
+  assert.match(migrationSource, /dentistos_user_id UUID/);
+  assert.match(migrationSource, /dentistos_practice_id UUID/);
+  assert.match(migrationSource, /dentistos_linked_at TIMESTAMPTZ/);
+});
+
 test("migration defines relationship constraints for account and practice tables", () => {
   assert.match(migrationSource, /user_id\s+UUID NOT NULL REFERENCES users\(id\) ON DELETE CASCADE/);
   assert.match(migrationSource, /practice_id\s+UUID NOT NULL REFERENCES practices\(id\) ON DELETE CASCADE/);
@@ -70,6 +77,7 @@ test("migration defines unique constraints for memberships and listing links", (
   assert.match(migrationSource, /session_token_hash\s+TEXT UNIQUE NOT NULL/);
   assert.match(migrationSource, /UNIQUE \(practice_id, user_id\)/);
   assert.match(migrationSource, /UNIQUE \(practice_id, dentist_id\)/);
+  assert.match(migrationSource, /idx_practice_listing_links_active_dentist/);
 });
 
 test("practice listing links do not assume dentist_id is an NPI", () => {
