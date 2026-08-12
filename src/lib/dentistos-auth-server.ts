@@ -7,6 +7,12 @@ import {
   type DentistOSUser,
 } from "./dentistos-auth";
 import { PostgresDentistOSAuthRepository } from "./dentistos-auth-data";
+import {
+  assertValidPracticeMembership,
+  getAuthorizedPracticeContext,
+  type DentistOSPracticeContext,
+} from "./dentistos-practices";
+import { PostgresDentistOSPracticeRepository } from "./dentistos-practices-data";
 
 export async function getCurrentUser(): Promise<DentistOSUser | null> {
   const store = await cookies();
@@ -23,4 +29,28 @@ export async function requireUser(): Promise<DentistOSUser> {
     redirect("/login");
   }
   return user;
+}
+
+export async function getCurrentPractice(): Promise<DentistOSPracticeContext | null> {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  return getAuthorizedPracticeContext({
+    user,
+    repository: new PostgresDentistOSPracticeRepository(),
+  });
+}
+
+export async function requirePracticeMembership(
+  practiceId: string
+): Promise<DentistOSPracticeContext> {
+  const user = await requireUser();
+  const context = await new PostgresDentistOSPracticeRepository().getPracticeContextForUser(
+    user.id,
+    practiceId
+  );
+  try {
+    return assertValidPracticeMembership(user, context, practiceId);
+  } catch {
+    redirect("/dentistos/dashboard");
+  }
 }
