@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -21,8 +20,10 @@ import {
   getDentistSuccessHubTool,
   type DentistSuccessHubTool,
 } from "@/lib/dentist-success-hub-tools";
-
-const SITE_URL = "https://www.usdentistsdirectory.com";
+import {
+  getDentistSuccessHubToolMetadata,
+  getDentistSuccessHubToolSeoSchemas,
+} from "@/lib/dentist-success-hub-seo";
 
 type RouteProps = PageProps<"/dentist-success-hub/tools/[slug]">;
 
@@ -30,7 +31,7 @@ export function generateStaticParams() {
   return DENTIST_SUCCESS_HUB_TOOLS.map((tool) => ({ slug: tool.slug }));
 }
 
-export async function generateMetadata({ params }: RouteProps): Promise<Metadata> {
+export async function generateMetadata({ params }: RouteProps) {
   const { slug } = await params;
   const tool = getDentistSuccessHubTool(slug);
 
@@ -44,28 +45,7 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
     };
   }
 
-  const path = `/dentist-success-hub/tools/${tool.slug}`;
-
-  return {
-    title: tool.seoTitle,
-    description: tool.seoDescription,
-    keywords: tool.keywords,
-    alternates: {
-      canonical: path,
-    },
-    openGraph: {
-      title: tool.seoTitle,
-      description: tool.seoDescription,
-      url: `${SITE_URL}${path}`,
-      siteName: "USDentistsDirectory",
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: tool.seoTitle,
-      description: tool.seoDescription,
-    },
-  };
+  return getDentistSuccessHubToolMetadata(tool);
 }
 
 export default async function DentistSuccessHubToolDetailPage({ params }: RouteProps) {
@@ -78,31 +58,9 @@ export default async function DentistSuccessHubToolDetailPage({ params }: RouteP
     .map((relatedSlug) => getDentistSuccessHubTool(relatedSlug))
     .filter((relatedTool): relatedTool is DentistSuccessHubTool => Boolean(relatedTool));
 
-  const toolJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: tool.title,
-    applicationCategory: "BusinessApplication",
-    operatingSystem: "Web",
-    description: tool.seoDescription,
-    url: `${SITE_URL}/dentist-success-hub/tools/${tool.slug}`,
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-      availability:
-        tool.status === "coming-soon"
-          ? "https://schema.org/PreOrder"
-          : "https://schema.org/InStock",
-    },
-  };
-
   return (
     <ToolPage>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(toolJsonLd) }}
-      />
+      <JsonLd data={getDentistSuccessHubToolSeoSchemas(tool)} />
 
       <ToolBreadcrumb
         items={[
@@ -205,6 +163,10 @@ export default async function DentistSuccessHubToolDetailPage({ params }: RouteP
       />
     </ToolPage>
   );
+}
+
+function JsonLd({ data }: { data: unknown }) {
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
 function ToolStatusPanel({ tool }: { tool: DentistSuccessHubTool }) {

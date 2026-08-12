@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 
 import {
@@ -20,49 +19,18 @@ import {
   type DentistSuccessHubToolSearchFilters,
   type DentistSuccessHubTool,
 } from "@/lib/dentist-success-hub-tools";
+import {
+  getDentistSuccessHubToolsMetadata,
+  getDentistSuccessHubToolsSeoSchemas,
+} from "@/lib/dentist-success-hub-seo";
 
-const SITE_URL = "https://www.usdentistsdirectory.com";
-const PAGE_URL = `${SITE_URL}/dentist-success-hub/tools`;
-
-export const metadata: Metadata = {
-  title: "Free Dental Practice Tools - Dentist Success Hub",
-  description:
-    "Explore Dentist Success Hub tools for dental marketing, operations, finance, AI, SEO, and practice profile visibility.",
-  alternates: {
-    canonical: "/dentist-success-hub/tools",
-  },
-  openGraph: {
-    title: "Free Dental Practice Tools - Dentist Success Hub",
-    description:
-      "Browse free and upcoming Dentist Success Hub tools for growing a stronger dental practice.",
-    url: PAGE_URL,
-    siteName: "USDentistsDirectory",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Free Dental Practice Tools",
-    description: "Explore Dentist Success Hub tools for practice growth, operations, SEO, and AI.",
-  },
-};
+export const metadata = getDentistSuccessHubToolsMetadata();
 
 const statusLabels: Record<DentistSuccessHubTool["status"], string> = {
   active: "Active",
   beta: "Beta",
   "coming-soon": "Coming Soon",
   premium: "Premium",
-};
-
-const toolListJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "ItemList",
-  name: "Dentist Success Hub Tools",
-  itemListElement: DENTIST_SUCCESS_HUB_TOOLS.map((tool, index) => ({
-    "@type": "ListItem",
-    position: index + 1,
-    name: tool.title,
-    url: `${PAGE_URL}/${tool.slug}`,
-  })),
 };
 
 type ToolsPageProps = {
@@ -83,10 +51,7 @@ export default async function DentistSuccessHubToolsPage({ searchParams }: Tools
 
   return (
     <ToolPage>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(toolListJsonLd) }}
-      />
+      <JsonLd data={getDentistSuccessHubToolsSeoSchemas()} />
 
       <ToolBreadcrumb
         items={[
@@ -192,6 +157,10 @@ export default async function DentistSuccessHubToolsPage({ searchParams }: Tools
       />
     </ToolPage>
   );
+}
+
+function JsonLd({ data }: { data: unknown }) {
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
 function ToolSearchForm({ filters }: { filters: DentistSuccessHubToolSearchFilters }) {

@@ -50,6 +50,7 @@ test("tool detail route loads metadata from registry", () => {
   assert.match(source, /generateStaticParams/);
   assert.match(source, /generateMetadata/);
   assert.match(source, /getDentistSuccessHubTool/);
+  assert.match(source, /getDentistSuccessHubToolMetadata/);
   assert.match(source, /notFound/);
 });
 
