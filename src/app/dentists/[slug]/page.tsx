@@ -3,6 +3,13 @@ import { notFound } from "next/navigation";
 import Rating from "@/components/Rating";
 import { type Dentist } from "@/lib/dentists";
 import { getDentistBySlug } from "@/lib/dentists-data";
+import {
+  hasReviewAggregate,
+  profileAboutText,
+  providerIdentityForDentist,
+  validNpi,
+  visibleProfileReviews,
+} from "@/lib/dentist-profile-ui";
 import { getReviewsForDentist } from "@/lib/reviews";
 
 const SITE_URL = "https://usdentistsdirectory.com";
@@ -38,12 +45,14 @@ function buildJsonLd(d: Dentist): Record<string, unknown> {
       worstRating: 1,
     };
   }
-  // Provider identifier from NPI (helps disambiguation in the knowledge graph)
-  schema.identifier = {
-    "@type": "PropertyValue",
-    propertyID: "NPI",
-    value: d.id,
-  };
+  const npi = validNpi(d.id);
+  if (npi) {
+    schema.identifier = {
+      "@type": "PropertyValue",
+      propertyID: "NPI",
+      value: npi,
+    };
+  }
   return schema;
 }
 
@@ -81,7 +90,9 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
   const { slug } = await props.params;
   const d = await getDentistBySlug(slug);
   if (!d) notFound();
-  const reviews = getReviewsForDentist(d.id, 4);
+  const reviews = visibleProfileReviews(d, getReviewsForDentist(d.id, 4));
+  const providerIdentity = providerIdentityForDentist(d);
+  const showReviewAggregate = hasReviewAggregate(d);
 
   const initials = d.name
     .replace(/^Dr\.?\s+/i, "")
@@ -134,7 +145,11 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
               )}
               <div className="mt-3 flex flex-wrap items-center gap-4">
                 <div className="rounded-full bg-white/15 px-3 py-1 ring-1 ring-white/20">
-                  <Rating value={d.rating} count={d.reviewCount} />
+                  {showReviewAggregate ? (
+                    <Rating value={d.rating} count={d.reviewCount} />
+                  ) : (
+                    <span className="text-sm font-semibold text-white">No reviews yet</span>
+                  )}
                 </div>
                 {d.acceptingNewPatients ? (
                   <span className="rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white shadow">
@@ -162,17 +177,14 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
             <section className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-blue-100">
               <h2 className="text-xl font-bold text-slate-900">About</h2>
               <p className="mt-3 leading-relaxed text-slate-700">
-                {d.bio ||
-                  `${d.name}${d.credentials ? `, ${d.credentials}` : ""} is a ${d.specialty.toLowerCase()} provider based in ${d.address.city}, ${d.address.stateCode}.${
-                    d.yearsExperience > 0 ? ` Practicing for over ${d.yearsExperience} years.` : ""
-                  } Verified through the National Provider Identifier (NPI) registry.`}
+                {profileAboutText(d)}
               </p>
               <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                 <div className="rounded-lg bg-blue-50/50 px-3 py-2 ring-1 ring-blue-100">
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    NPI Number
+                    {providerIdentity.label}
                   </span>
-                  <p className="mt-0.5 font-mono text-slate-800">{d.id}</p>
+                  <p className="mt-0.5 font-mono text-slate-800">{providerIdentity.value}</p>
                 </div>
                 <div className="rounded-lg bg-blue-50/50 px-3 py-2 ring-1 ring-blue-100">
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -188,11 +200,14 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
                 <h2 className="text-xl font-bold text-slate-900">
                   Patient Reviews ({d.reviewCount.toLocaleString()})
                 </h2>
-                <div className="flex items-center gap-2">
-                  <Rating value={d.rating} />
-                </div>
+                {showReviewAggregate && (
+                  <div className="flex items-center gap-2">
+                    <Rating value={d.rating} />
+                  </div>
+                )}
               </div>
-              <ul className="mt-5 divide-y divide-blue-50">
+              {reviews.length > 0 ? (
+                <ul className="mt-5 divide-y divide-blue-50">
                 {reviews.map((r, i) => (
                   <li key={i} className="py-4 first:pt-0 last:pb-0">
                     <div className="flex items-start justify-between gap-3">
@@ -207,11 +222,12 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
                     <p className="mt-2 text-sm leading-relaxed text-slate-700">{r.body}</p>
                   </li>
                 ))}
-              </ul>
-              <p className="mt-4 text-xs text-slate-500">
-                Reviews shown are illustrative samples. Ratings are computed from aggregate patient
-                feedback.
-              </p>
+                </ul>
+              ) : (
+                <p className="mt-5 text-sm leading-relaxed text-slate-600">
+                  No patient review text has been published for this listing yet.
+                </p>
+              )}
             </section>
           </div>
 
@@ -283,9 +299,15 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
                   Call to Schedule
                 </a>
               )}
-              <p className="mt-3 text-xs text-slate-500">
-                Verified via NPI Registry · Practitioner #{d.id}
-              </p>
+              {providerIdentity.npiVerified ? (
+                <p className="mt-3 text-xs text-slate-500">
+                  Verified via NPI Registry · NPI #{providerIdentity.value}
+                </p>
+              ) : (
+                <p className="mt-3 text-xs text-slate-500">
+                  Directory listing ID #{providerIdentity.value}
+                </p>
+              )}
             </div>
 
             <div className="rounded-xl bg-blue-600 p-6 text-white shadow-sm">
