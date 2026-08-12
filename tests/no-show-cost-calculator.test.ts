@@ -201,12 +201,11 @@ test("Dentist Success Hub no-show route renders the real calculator instead of o
   assert.match(source, /NoShowCostCalculatorWorkspace/);
   assert.match(source, /tool\.slug === "no-show-cost-calculator"/);
   assert.match(workspaceSource, /CalculatorShell/);
+  assert.match(workspaceSource, /CalculatorFieldGrid/);
+  assert.match(workspaceSource, /CalculatorActionBar/);
   assert.match(workspaceSource, /calculateNoShowCost/);
   assert.match(workspaceSource, /getNoShowCostRecommendations/);
-  assert.match(workspaceSource, /Save to DentistOS/);
   assert.match(workspaceSource, /Claim your listing/);
-  assert.match(workspaceSource, /PrintButton/);
-  assert.match(workspaceSource, /ShareButton/);
 });
 
 test("no-show calculation logic exists only in the shared pure module", () => {
@@ -233,6 +232,8 @@ test("shared calculator UI framework exposes reusable accessible primitives", ()
   for (const exportName of [
     "CalculatorShell",
     "CalculatorSection",
+    "CalculatorFieldGrid",
+    "CalculatorFieldInput",
     "CalculatorInput",
     "CurrencyInput",
     "NumberInput",
@@ -245,8 +246,10 @@ test("shared calculator UI framework exposes reusable accessible primitives", ()
     "RecommendationCard",
     "WarningCard",
     "CalculatorActions",
+    "CalculatorActionBar",
     "PrintButton",
     "ShareButton",
+    "FutureSaveToDentistOSButton",
     "ClaimListingCTA",
   ]) {
     assert.match(source, new RegExp(`export function ${exportName}`));
@@ -254,6 +257,14 @@ test("shared calculator UI framework exposes reusable accessible primitives", ()
 
   assert.match(source, /htmlFor=\{id\}/);
   assert.match(source, /aria-describedby/);
+  assert.match(source, /Save this report to your DentistOS Dashboard/);
+  assert.match(source, /disabled/);
+  assert.match(source, /type="range"/);
+  assert.match(source, /type="number"/);
+  assert.match(source, /setCopied\(true\)/);
+  assert.match(source, /aria-live="polite"/);
+  assert.match(source, /"danger"/);
+  assert.match(source, /"info"/);
   assert.doesNotMatch(source, /No-Show Cost Calculator|Cancellation Loss|weeklyCancellationLoss/);
 });
 

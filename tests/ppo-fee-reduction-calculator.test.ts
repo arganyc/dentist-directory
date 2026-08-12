@@ -185,9 +185,10 @@ test("Dentist Success Hub PPO fee reduction route renders a real calculator work
   assert.match(routeSource, /PpoFeeReductionCalculatorWorkspace/);
   assert.match(routeSource, /tool\.slug === "ppo-fee-reduction-calculator"/);
   assert.match(workspaceSource, /CalculatorShell/);
+  assert.match(workspaceSource, /CalculatorFieldGrid/);
+  assert.match(workspaceSource, /CalculatorActionBar/);
   assert.match(workspaceSource, /calculatePpoFeeReduction/);
   assert.match(workspaceSource, /getPpoFeeReductionRecommendations/);
-  assert.match(workspaceSource, /Save to DentistOS/);
   assert.match(workspaceSource, /Claim your listing/);
   assert.match(workspaceSource, /does not provide legal, accounting, tax,\s+payer-contract/);
 });

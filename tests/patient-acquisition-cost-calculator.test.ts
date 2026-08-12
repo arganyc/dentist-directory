@@ -160,9 +160,10 @@ test("Dentist Success Hub patient acquisition route renders a real calculator wo
   assert.match(routeSource, /PatientAcquisitionCostCalculatorWorkspace/);
   assert.match(routeSource, /tool\.slug === "patient-acquisition-cost-calculator"/);
   assert.match(workspaceSource, /CalculatorShell/);
+  assert.match(workspaceSource, /CalculatorFieldGrid/);
+  assert.match(workspaceSource, /CalculatorActionBar/);
   assert.match(workspaceSource, /calculatePatientAcquisitionCost/);
   assert.match(workspaceSource, /getPatientAcquisitionCostRecommendations/);
-  assert.match(workspaceSource, /Save to DentistOS/);
   assert.match(workspaceSource, /Claim your listing/);
   assert.match(workspaceSource, /New Patient\s+Lifetime Value workspace remains a separate future Dentist Success Hub product/);
 });

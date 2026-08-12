@@ -3,20 +3,18 @@
 import { useMemo, useState } from "react";
 
 import {
-  CalculatorActions,
+  CalculatorActionBar,
+  CalculatorFieldGrid,
+  type CalculatorFieldConfig,
   CalculatorSection,
   CalculatorShell,
   ClaimListingCTA,
-  CurrencyInput,
   formatCalculatorCurrency,
   formatCalculatorNumber,
   InsightCard,
-  PercentageInput,
-  PrintButton,
   RecommendationCard,
   ResultCard,
   ResultsGrid,
-  ShareButton,
   WarningCard,
 } from "@/components/calculator-framework";
 import {
@@ -26,17 +24,9 @@ import {
   type PpoFeeReductionCalculatorInputs,
 } from "@/lib/calculators/ppo-fee-reduction";
 
-type FieldConfig = {
-  key: keyof PpoFeeReductionCalculatorInputs;
-  label: string;
-  inputType: "currency" | "percentage";
-  min: number;
-  max: number;
-  step: number;
-  helperText?: string;
-};
+type FieldKey = Extract<keyof PpoFeeReductionCalculatorInputs, string>;
 
-const fields: FieldConfig[] = [
+const fields: CalculatorFieldConfig<FieldKey>[] = [
   {
     key: "monthlyBilledProduction",
     label: "Monthly billed production",
@@ -83,11 +73,11 @@ export default function PpoFeeReductionCalculatorWorkspace() {
     [inputs, results]
   );
 
-  function updateInput(key: keyof PpoFeeReductionCalculatorInputs, value: number, field: FieldConfig) {
+  function updateInput(key: FieldKey, value: number) {
     if (Number.isNaN(value)) return;
     setInputs((current) => ({
       ...current,
-      [key]: clamp(value, field.min, field.max),
+      [key]: value,
     }));
   }
 
@@ -101,7 +91,7 @@ export default function PpoFeeReductionCalculatorWorkspace() {
             <ResultCard
               label="Monthly write-off"
               value={formatCalculatorCurrency(results.totalWriteOff)}
-              description={`${formatCalculatorNumber(results.writeOffPct)}% of modeled billed production is adjusted before collection.`}
+              description={`Monthly KPI: fee reductions are usually reviewed against monthly production reports. ${formatCalculatorNumber(results.writeOffPct)}% of modeled billed production is adjusted before collection.`}
               tone="primary"
             />
             <ResultsGrid>
@@ -122,16 +112,7 @@ export default function PpoFeeReductionCalculatorWorkspace() {
           title="Production and payer mix"
           description="Use a typical month and blended adjustment assumptions. Keep payer-specific decisions separate from this planning estimate."
         >
-          <div className="grid gap-5 md:grid-cols-2">
-            {fields.map((field) => (
-              <InputForField
-                key={field.key}
-                field={field}
-                value={inputs[field.key]}
-                onChange={(value) => updateInput(field.key, value, field)}
-              />
-            ))}
-          </div>
+          <CalculatorFieldGrid fields={fields} values={inputs} idPrefix="ppo-fee-reduction" onChange={updateInput} />
         </CalculatorSection>
 
         <CalculatorSection title="Network breakdown">
@@ -144,24 +125,7 @@ export default function PpoFeeReductionCalculatorWorkspace() {
         </CalculatorSection>
 
         <CalculatorSection title="Actions">
-          <CalculatorActions>
-            <button
-              type="button"
-              onClick={() => setInputs(ppoFeeReductionInitialInputs)}
-              className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-cyan-800"
-            >
-              Reset calculator
-            </button>
-            <PrintButton label="Print estimate" />
-            <ShareButton label="Copy tool link" />
-            <button
-              type="button"
-              aria-disabled="true"
-              className="inline-flex items-center justify-center rounded-full border border-cyan-200 bg-cyan-50 px-5 py-2.5 text-sm font-bold text-cyan-800"
-            >
-              Save to DentistOS
-            </button>
-          </CalculatorActions>
+          <CalculatorActionBar onReset={() => setInputs(ppoFeeReductionInitialInputs)} />
         </CalculatorSection>
       </CalculatorShell>
 
@@ -191,32 +155,4 @@ export default function PpoFeeReductionCalculatorWorkspace() {
       </div>
     </div>
   );
-}
-
-function InputForField({
-  field,
-  value,
-  onChange,
-}: {
-  field: FieldConfig;
-  value: number;
-  onChange: (value: number) => void;
-}) {
-  const props = {
-    id: `ppo-fee-reduction-${field.key}`,
-    label: field.label,
-    value,
-    onChange,
-    min: field.min,
-    max: field.max,
-    step: field.step,
-    helperText: field.helperText,
-  };
-
-  if (field.inputType === "currency") return <CurrencyInput {...props} />;
-  return <PercentageInput {...props} />;
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max);
 }

@@ -3,22 +3,18 @@
 import { useMemo, useState } from "react";
 
 import {
-  CalculatorActions,
+  CalculatorActionBar,
+  CalculatorFieldGrid,
+  type CalculatorFieldConfig,
   CalculatorSection,
   CalculatorShell,
   ClaimListingCTA,
-  CurrencyInput,
   formatCalculatorCurrency,
   formatCalculatorNumber,
   InsightCard,
-  NumberInput,
-  PercentageInput,
-  PrintButton,
   RecommendationCard,
   ResultCard,
   ResultsGrid,
-  ShareButton,
-  SliderInput,
   WarningCard,
 } from "@/components/calculator-framework";
 import {
@@ -28,18 +24,9 @@ import {
   type NoShowCostCalculatorInputs,
 } from "@/lib/calculators/no-show-cost";
 
-type FieldConfig = {
-  key: keyof NoShowCostCalculatorInputs;
-  label: string;
-  inputType: "currency" | "number" | "percentage" | "slider";
-  min: number;
-  max: number;
-  step: number;
-  suffix?: string;
-  helperText?: string;
-};
+type FieldKey = Extract<keyof NoShowCostCalculatorInputs, string>;
 
-const fields: FieldConfig[] = [
+const fields: CalculatorFieldConfig<FieldKey>[] = [
   {
     key: "averageProduction",
     label: "Average production per missed visit",
@@ -124,11 +111,11 @@ export default function NoShowCostCalculatorWorkspace() {
     [inputs, results]
   );
 
-  function updateInput(key: keyof NoShowCostCalculatorInputs, value: number, field: FieldConfig) {
+  function updateInput(key: FieldKey, value: number) {
     if (Number.isNaN(value)) return;
     setInputs((current) => ({
       ...current,
-      [key]: clamp(value, field.min, field.max),
+      [key]: value,
     }));
   }
 
@@ -142,7 +129,7 @@ export default function NoShowCostCalculatorWorkspace() {
             <ResultCard
               label="Estimated annual loss"
               value={formatCalculatorCurrency(results.annualLoss)}
-              description="Based on unrecovered cancellations, no-shows, and open chair time."
+              description="Annual KPI: missed appointments compound across the full working year."
               tone="primary"
             />
             <ResultsGrid>
@@ -163,16 +150,7 @@ export default function NoShowCostCalculatorWorkspace() {
           title="Practice inputs"
           description="Start with the defaults, then adjust the numbers to match a normal week at your practice."
         >
-          <div className="grid gap-5 md:grid-cols-2">
-            {fields.map((field) => (
-              <InputForField
-                key={field.key}
-                field={field}
-                value={inputs[field.key]}
-                onChange={(value) => updateInput(field.key, value, field)}
-              />
-            ))}
-          </div>
+          <CalculatorFieldGrid fields={fields} values={inputs} idPrefix="no-show" onChange={updateInput} />
         </CalculatorSection>
 
         <CalculatorSection title="Recovery scenarios">
@@ -188,24 +166,7 @@ export default function NoShowCostCalculatorWorkspace() {
         </CalculatorSection>
 
         <CalculatorSection title="Actions">
-          <CalculatorActions>
-            <button
-              type="button"
-              onClick={() => setInputs(noShowCostCalculatorInitialInputs)}
-              className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-cyan-800"
-            >
-              Reset calculator
-            </button>
-            <PrintButton label="Print estimate" />
-            <ShareButton label="Copy tool link" />
-            <button
-              type="button"
-              aria-disabled="true"
-              className="inline-flex items-center justify-center rounded-full border border-cyan-200 bg-cyan-50 px-5 py-2.5 text-sm font-bold text-cyan-800"
-            >
-              Save to DentistOS
-            </button>
-          </CalculatorActions>
+          <CalculatorActionBar onReset={() => setInputs(noShowCostCalculatorInitialInputs)} />
         </CalculatorSection>
       </CalculatorShell>
 
@@ -234,34 +195,4 @@ export default function NoShowCostCalculatorWorkspace() {
       </div>
     </div>
   );
-}
-
-function InputForField({
-  field,
-  value,
-  onChange,
-}: {
-  field: FieldConfig;
-  value: number;
-  onChange: (value: number) => void;
-}) {
-  const props = {
-    id: `no-show-${field.key}`,
-    label: field.label,
-    value,
-    onChange,
-    min: field.min,
-    max: field.max,
-    step: field.step,
-    helperText: field.helperText,
-  };
-
-  if (field.inputType === "currency") return <CurrencyInput {...props} />;
-  if (field.inputType === "percentage") return <PercentageInput {...props} />;
-  if (field.inputType === "slider") return <SliderInput {...props} suffix={field.suffix} />;
-  return <NumberInput {...props} />;
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max);
 }

@@ -3,20 +3,18 @@
 import { useMemo, useState } from "react";
 
 import {
-  CalculatorActions,
+  CalculatorActionBar,
+  CalculatorFieldGrid,
+  type CalculatorFieldConfig,
   CalculatorSection,
   CalculatorShell,
   ClaimListingCTA,
-  CurrencyInput,
   formatCalculatorCurrency,
   formatCalculatorNumber,
   InsightCard,
-  NumberInput,
-  PrintButton,
   RecommendationCard,
   ResultCard,
   ResultsGrid,
-  ShareButton,
   WarningCard,
 } from "@/components/calculator-framework";
 import {
@@ -26,18 +24,9 @@ import {
   type PatientAcquisitionCostCalculatorInputs,
 } from "@/lib/calculators/patient-acquisition-cost";
 
-type FieldConfig = {
-  key: keyof PatientAcquisitionCostCalculatorInputs;
-  label: string;
-  inputType: "currency" | "number";
-  min: number;
-  max: number;
-  step: number;
-  suffix?: string;
-  helperText?: string;
-};
+type FieldKey = Extract<keyof PatientAcquisitionCostCalculatorInputs, string>;
 
-const fields: FieldConfig[] = [
+const fields: CalculatorFieldConfig<FieldKey>[] = [
   {
     key: "monthlyMarketingSpend",
     label: "Monthly marketing spend",
@@ -85,14 +74,13 @@ export default function PatientAcquisitionCostCalculatorWorkspace() {
   );
 
   function updateInput(
-    key: keyof PatientAcquisitionCostCalculatorInputs,
-    value: number,
-    field: FieldConfig
+    key: FieldKey,
+    value: number
   ) {
     if (Number.isNaN(value)) return;
     setInputs((current) => ({
       ...current,
-      [key]: clamp(value, field.min, field.max),
+      [key]: value,
     }));
   }
 
@@ -106,7 +94,7 @@ export default function PatientAcquisitionCostCalculatorWorkspace() {
             <ResultCard
               label="Cost per new patient"
               value={formatCalculatorCurrency(results.cac)}
-              description={`Modeled LTV:CAC ratio is ${formatCalculatorNumber(results.ltvToCacRatio)}x, a ${results.healthLabel} range.`}
+              description={`Per-patient KPI: acquisition cost is easiest to compare across channels. Modeled LTV:CAC ratio is ${formatCalculatorNumber(results.ltvToCacRatio)}x, a ${results.healthLabel} range.`}
               tone="primary"
             />
             <ResultsGrid>
@@ -127,16 +115,12 @@ export default function PatientAcquisitionCostCalculatorWorkspace() {
           title="Marketing and patient inputs"
           description="Use a typical month and include all marketing channels in the spend number."
         >
-          <div className="grid gap-5 md:grid-cols-2">
-            {fields.map((field) => (
-              <InputForField
-                key={field.key}
-                field={field}
-                value={inputs[field.key]}
-                onChange={(value) => updateInput(field.key, value, field)}
-              />
-            ))}
-          </div>
+          <CalculatorFieldGrid
+            fields={fields}
+            values={inputs}
+            idPrefix="patient-acquisition-cost"
+            onChange={updateInput}
+          />
         </CalculatorSection>
 
         <CalculatorSection title="Annual implications">
@@ -149,24 +133,7 @@ export default function PatientAcquisitionCostCalculatorWorkspace() {
         </CalculatorSection>
 
         <CalculatorSection title="Actions">
-          <CalculatorActions>
-            <button
-              type="button"
-              onClick={() => setInputs(patientAcquisitionCostInitialInputs)}
-              className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-cyan-800"
-            >
-              Reset calculator
-            </button>
-            <PrintButton label="Print estimate" />
-            <ShareButton label="Copy tool link" />
-            <button
-              type="button"
-              aria-disabled="true"
-              className="inline-flex items-center justify-center rounded-full border border-cyan-200 bg-cyan-50 px-5 py-2.5 text-sm font-bold text-cyan-800"
-            >
-              Save to DentistOS
-            </button>
-          </CalculatorActions>
+          <CalculatorActionBar onReset={() => setInputs(patientAcquisitionCostInitialInputs)} />
         </CalculatorSection>
       </CalculatorShell>
 
@@ -195,33 +162,4 @@ export default function PatientAcquisitionCostCalculatorWorkspace() {
       </div>
     </div>
   );
-}
-
-function InputForField({
-  field,
-  value,
-  onChange,
-}: {
-  field: FieldConfig;
-  value: number;
-  onChange: (value: number) => void;
-}) {
-  const props = {
-    id: `patient-acquisition-cost-${field.key}`,
-    label: field.label,
-    value,
-    onChange,
-    min: field.min,
-    max: field.max,
-    step: field.step,
-    suffix: field.suffix,
-    helperText: field.helperText,
-  };
-
-  if (field.inputType === "currency") return <CurrencyInput {...props} />;
-  return <NumberInput {...props} />;
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max);
 }

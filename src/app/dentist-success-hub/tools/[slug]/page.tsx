@@ -101,9 +101,11 @@ export default async function DentistSuccessHubToolDetailPage({ params }: RouteP
           {tool.status === "premium" && <PremiumPreview tool={tool} />}
           {tool.status === "beta" && <BetaPreview tool={tool} />}
 
-          <ToolDisclaimer>
-            {disclaimerForTool(tool)}
-          </ToolDisclaimer>
+          {!workspaceIncludesDisclaimer(tool) && (
+            <ToolDisclaimer>
+              {disclaimerForTool(tool)}
+            </ToolDisclaimer>
+          )}
         </main>
 
         <ToolSidebar
@@ -302,6 +304,14 @@ function primaryActionForTool(tool: DentistSuccessHubTool) {
     return { label: "Browse active tools", href: "/dentist-success-hub/tools?status=active#tool-results" };
   }
   return { label: "Preview workspace", href: "#workspace" };
+}
+
+function workspaceIncludesDisclaimer(tool: DentistSuccessHubTool) {
+  return [
+    "no-show-cost-calculator",
+    "patient-acquisition-cost-calculator",
+    "ppo-fee-reduction-calculator",
+  ].includes(tool.slug);
 }
 
 function faqForTool(tool: DentistSuccessHubTool): ToolFAQItem[] {
