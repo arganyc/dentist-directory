@@ -48,12 +48,80 @@ export type ToolRegistryValidationResult = {
   errors: string[];
 };
 
+export type DentistSuccessHubCategorySummary = {
+  name: DentistSuccessHubCategory;
+  description: string;
+  href: string;
+  anchor: string;
+  icon: string;
+  count: number;
+};
+
+export type DentistSuccessHubToolCardView = {
+  title: string;
+  description: string;
+  href: string;
+  eyebrow: string;
+  badge: string;
+  footer: string;
+};
+
 export type DentistSuccessHubToolSearchFilters = {
   query?: string;
   category?: string;
   status?: string;
   toolType?: string;
   estimatedTime?: string;
+};
+
+export const DENTIST_SUCCESS_HUB_FEATURED_TOOL_SLUGS = [
+  "no-show-cost-calculator",
+  "new-patient-lifetime-value",
+  "daily-production-goal-calculator",
+  "chair-utilization-calculator",
+  "marketing-roi-calculator",
+  "google-business-profile-audit",
+  "local-seo-audit",
+  "practice-profile-score",
+  "ai-practice-description-generator",
+  "google-review-analyzer",
+] as const;
+
+const DENTIST_SUCCESS_HUB_CATEGORY_DETAILS: Record<
+  DentistSuccessHubCategory,
+  { description: string; icon: string }
+> = {
+  Marketing: {
+    description: "Plan patient acquisition, local search visibility, campaigns, and review growth.",
+    icon: "target",
+  },
+  Financial: {
+    description: "Model production, collections, patient value, margins, and long-term practice economics.",
+    icon: "wallet",
+  },
+  Operations: {
+    description: "Evaluate capacity, scheduling, recall, no-shows, and operatory performance.",
+    icon: "flow",
+  },
+  AI: {
+    description: "Preview future AI workflows for dental content, communication, and office productivity.",
+    icon: "spark",
+  },
+  "Profile & Visibility": {
+    description: "Improve directory accuracy, completeness, trust signals, and listing ownership.",
+    icon: "profile",
+  },
+  Resources: {
+    description: "Use practical analysis tools and guidance built for dental teams.",
+    icon: "book",
+  },
+};
+
+const DENTIST_SUCCESS_HUB_STATUS_LABELS: Record<DentistSuccessHubToolStatus, string> = {
+  active: "Active",
+  beta: "Beta",
+  "coming-soon": "Coming Soon",
+  premium: "Premium",
 };
 
 export const DENTIST_SUCCESS_HUB_TOOLS = [
@@ -667,6 +735,14 @@ export function validateToolRegistry(
     }
   });
 
+  if (tools === DENTIST_SUCCESS_HUB_TOOLS) {
+    for (const featuredSlug of DENTIST_SUCCESS_HUB_FEATURED_TOOL_SLUGS) {
+      if (!knownSlugs.has(featuredSlug)) {
+        errors.push(`featured tool references unknown slug: ${featuredSlug}`);
+      }
+    }
+  }
+
   return {
     valid: errors.length === 0,
     errors,
@@ -681,6 +757,64 @@ export function getDentistSuccessHubToolsByCategory(
   category: DentistSuccessHubCategory
 ): DentistSuccessHubTool[] {
   return DENTIST_SUCCESS_HUB_TOOLS.filter((tool) => tool.category === category);
+}
+
+export function getDentistSuccessHubActiveTools(): DentistSuccessHubTool[] {
+  return DENTIST_SUCCESS_HUB_TOOLS.filter((tool) => tool.status === "active");
+}
+
+export function getDentistSuccessHubFeaturedTools(): DentistSuccessHubTool[] {
+  return resolveDentistSuccessHubTools(DENTIST_SUCCESS_HUB_FEATURED_TOOL_SLUGS);
+}
+
+export function getDentistSuccessHubRelatedTools(tool: DentistSuccessHubTool): DentistSuccessHubTool[] {
+  return resolveDentistSuccessHubTools(tool.relatedTools);
+}
+
+export function getDentistSuccessHubCategorySummaries(): DentistSuccessHubCategorySummary[] {
+  return DENTIST_SUCCESS_HUB_CATEGORIES.map((category) => {
+    const details = DENTIST_SUCCESS_HUB_CATEGORY_DETAILS[category];
+    const anchor = getDentistSuccessHubCategorySlug(category);
+    return {
+      name: category,
+      description: details.description,
+      href: `/dentist-success-hub/tools#${anchor}`,
+      anchor,
+      icon: details.icon,
+      count: getDentistSuccessHubToolsByCategory(category).length,
+    };
+  });
+}
+
+export function getDentistSuccessHubCategoryDescription(category: DentistSuccessHubCategory): string {
+  return DENTIST_SUCCESS_HUB_CATEGORY_DETAILS[category].description;
+}
+
+export function getDentistSuccessHubCategorySlug(category: DentistSuccessHubCategory): string {
+  return category
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+export function getDentistSuccessHubStatusLabel(status: DentistSuccessHubToolStatus): string {
+  return DENTIST_SUCCESS_HUB_STATUS_LABELS[status];
+}
+
+export function getDentistSuccessHubToolHref(tool: DentistSuccessHubTool): string {
+  return `/dentist-success-hub/tools/${tool.slug}`;
+}
+
+export function toDentistSuccessHubToolCard(tool: DentistSuccessHubTool): DentistSuccessHubToolCardView {
+  return {
+    title: tool.title,
+    description: tool.shortDescription,
+    href: getDentistSuccessHubToolHref(tool),
+    eyebrow: tool.category,
+    badge: getDentistSuccessHubStatusLabel(tool.status),
+    footer: tool.estimatedTime,
+  };
 }
 
 export function getDentistSuccessHubEstimatedTimes(
@@ -725,4 +859,10 @@ function toolMatchesQuery(tool: DentistSuccessHubTool, query: string): boolean {
 
 function normalizeSearchTerm(value: string | undefined): string {
   return value?.trim().toLowerCase() ?? "";
+}
+
+function resolveDentistSuccessHubTools(slugs: readonly string[]): DentistSuccessHubTool[] {
+  return slugs
+    .map((slug) => getDentistSuccessHubTool(slug))
+    .filter((tool): tool is DentistSuccessHubTool => Boolean(tool));
 }

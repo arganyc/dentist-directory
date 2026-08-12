@@ -32,17 +32,21 @@ export type ToolFAQItem = {
   answer: ReactNode;
 };
 
-export type ToolRecommendation = {
-  title: string;
-  description: string;
-  href?: string;
-  badge?: string;
-};
+export type ToolRecommendation = ToolCardItem;
 
 type WithChildren = {
   children: ReactNode;
   className?: string;
 };
+
+export function ToolJsonLd({ data }: { data: unknown }) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }}
+    />
+  );
+}
 
 export function ToolPage({ children, className = "" }: WithChildren) {
   return (
@@ -286,13 +290,7 @@ export function ToolRecommendations({
       <ToolHeader title={title} />
       <ToolGrid className="mt-6">
         {items.map((item) => (
-          <ToolCard
-            key={item.title}
-            title={item.title}
-            description={item.description}
-            href={item.href}
-            badge={item.badge}
-          />
+          <ToolCard key={item.title} {...item} />
         ))}
       </ToolGrid>
     </section>

@@ -14,6 +14,7 @@ test("tool engine exports all reusable components", () => {
     "ToolPage",
     "ToolHero",
     "ToolHeader",
+    "ToolJsonLd",
     "ToolCard",
     "ToolGrid",
     "ToolSidebar",

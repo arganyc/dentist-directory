@@ -21,9 +21,12 @@ test("tool directory route is generated from the registry", () => {
   const source = readFileSync(toolsDirectoryRoute, "utf8");
 
   assert.match(source, /DENTIST_SUCCESS_HUB_TOOLS/);
-  assert.match(source, /DENTIST_SUCCESS_HUB_CATEGORIES/);
+  assert.match(source, /getDentistSuccessHubActiveTools/);
+  assert.match(source, /getDentistSuccessHubCategorySummaries/);
+  assert.match(source, /toDentistSuccessHubToolCard/);
   assert.match(source, /searchDentistSuccessHubTools/);
   assert.match(source, /getDentistSuccessHubEstimatedTimes/);
+  assert.match(source, /ToolJsonLd/);
   assert.match(source, /ToolGrid/);
   assert.match(source, /ToolCard/);
 
@@ -51,6 +54,8 @@ test("tool detail route loads metadata from registry", () => {
   assert.match(source, /generateMetadata/);
   assert.match(source, /getDentistSuccessHubTool/);
   assert.match(source, /getDentistSuccessHubToolMetadata/);
+  assert.match(source, /getDentistSuccessHubRelatedTools/);
+  assert.match(source, /toDentistSuccessHubToolCard/);
   assert.match(source, /notFound/);
 });
 

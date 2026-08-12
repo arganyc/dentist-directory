@@ -7,17 +7,20 @@ import {
   ToolGrid,
   ToolHeader,
   ToolHero,
+  ToolJsonLd,
   ToolPage,
 } from "@/components/tool-engine";
 import {
-  DENTIST_SUCCESS_HUB_CATEGORIES,
   DENTIST_SUCCESS_HUB_TOOLS,
   DENTIST_SUCCESS_HUB_TOOL_STATUSES,
   DENTIST_SUCCESS_HUB_TOOL_TYPES,
+  getDentistSuccessHubActiveTools,
+  getDentistSuccessHubCategorySummaries,
   getDentistSuccessHubEstimatedTimes,
+  getDentistSuccessHubStatusLabel,
   searchDentistSuccessHubTools,
+  toDentistSuccessHubToolCard,
   type DentistSuccessHubToolSearchFilters,
-  type DentistSuccessHubTool,
 } from "@/lib/dentist-success-hub-tools";
 import {
   getDentistSuccessHubToolsMetadata,
@@ -26,32 +29,27 @@ import {
 
 export const metadata = getDentistSuccessHubToolsMetadata();
 
-const statusLabels: Record<DentistSuccessHubTool["status"], string> = {
-  active: "Active",
-  beta: "Beta",
-  "coming-soon": "Coming Soon",
-  premium: "Premium",
-};
-
 type ToolsPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const estimatedTimes = getDentistSuccessHubEstimatedTimes();
+const categorySummaries = getDentistSuccessHubCategorySummaries();
 
 export default async function DentistSuccessHubToolsPage({ searchParams }: ToolsPageProps) {
   const params = searchParams ? await searchParams : {};
   const filters = filtersFromSearchParams(params);
   const filteredTools = searchDentistSuccessHubTools(filters);
   const hasFilters = Object.values(filters).some(Boolean);
-  const activeCount = DENTIST_SUCCESS_HUB_TOOLS.filter((tool) => tool.status === "active").length;
+  const activeTools = getDentistSuccessHubActiveTools();
+  const activeCount = activeTools.length;
   const comingSoonCount = DENTIST_SUCCESS_HUB_TOOLS.filter(
     (tool) => tool.status === "coming-soon"
   ).length;
 
   return (
     <ToolPage>
-      <JsonLd data={getDentistSuccessHubToolsSeoSchemas()} />
+      <ToolJsonLd data={getDentistSuccessHubToolsSeoSchemas()} />
 
       <ToolBreadcrumb
         items={[
@@ -79,18 +77,33 @@ export default async function DentistSuccessHubToolsPage({ searchParams }: Tools
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 shadow-sm">
           <p className="text-sm font-bold uppercase text-cyan-700">Built from one registry</p>
           <div className="mt-5 grid grid-cols-2 gap-3">
-            {DENTIST_SUCCESS_HUB_CATEGORIES.map((category) => (
+            {categorySummaries.map((category) => (
               <Link
-                key={category}
-                href={`#${categorySlug(category)}`}
+                key={category.name}
+                href={`#${category.anchor}`}
                 className="rounded-lg border border-slate-200 bg-white p-4 text-sm font-bold text-slate-800 hover:border-cyan-300 hover:text-cyan-800"
               >
-                {category}
+                {category.name}
               </Link>
             ))}
           </div>
         </div>
       </ToolHero>
+
+      {activeTools.length > 0 && (
+        <section id="active-tools" className="border-t border-slate-200 py-10">
+          <ToolHeader
+            eyebrow="Available now"
+            title="Active tools"
+            description="Active tools are automatically pulled from the shared Dentist Success Hub registry."
+          />
+          <ToolGrid className="mt-8">
+            {activeTools.map((tool) => (
+              <ToolCard key={tool.slug} {...toDentistSuccessHubToolCard(tool)} />
+            ))}
+          </ToolGrid>
+        </section>
+      )}
 
       <section id="tool-results" className="border-t border-slate-200 py-10">
         <ToolHeader
@@ -127,20 +140,20 @@ export default async function DentistSuccessHubToolsPage({ searchParams }: Tools
             </p>
           </div>
         ) : (
-          DENTIST_SUCCESS_HUB_CATEGORIES.map((category) => {
-            const tools = filteredTools.filter((tool) => tool.category === category);
+          categorySummaries.map((category) => {
+            const tools = filteredTools.filter((tool) => tool.category === category.name);
             if (tools.length === 0) return null;
 
             return (
-              <section key={category} id={categorySlug(category)} className="pt-10">
+              <section key={category.name} id={category.anchor} className="pt-10">
                 <ToolHeader
                   eyebrow={`${tools.length} tools`}
-                  title={category}
-                  description={categoryDescription(category)}
+                  title={category.name}
+                  description={category.description}
                 />
                 <ToolGrid className="mt-8">
                   {tools.map((tool) => (
-                    <ToolCard key={tool.slug} {...toolCardFromRegistry(tool)} />
+                    <ToolCard key={tool.slug} {...toDentistSuccessHubToolCard(tool)} />
                   ))}
                 </ToolGrid>
               </section>
@@ -157,10 +170,6 @@ export default async function DentistSuccessHubToolsPage({ searchParams }: Tools
       />
     </ToolPage>
   );
-}
-
-function JsonLd({ data }: { data: unknown }) {
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
 function ToolSearchForm({ filters }: { filters: DentistSuccessHubToolSearchFilters }) {
@@ -186,9 +195,9 @@ function ToolSearchForm({ filters }: { filters: DentistSuccessHubToolSearchFilte
             defaultValue={filters.category}
           >
             <option value="">All</option>
-            {DENTIST_SUCCESS_HUB_CATEGORIES.map((category) => (
-              <option key={category} value={category}>
-                {category}
+            {categorySummaries.map((category) => (
+              <option key={category.name} value={category.name}>
+                {category.name}
               </option>
             ))}
           </select>
@@ -204,7 +213,7 @@ function ToolSearchForm({ filters }: { filters: DentistSuccessHubToolSearchFilte
             <option value="">All</option>
             {DENTIST_SUCCESS_HUB_TOOL_STATUSES.map((status) => (
               <option key={status} value={status}>
-                {statusLabels[status]}
+                {getDentistSuccessHubStatusLabel(status)}
               </option>
             ))}
           </select>
@@ -273,37 +282,6 @@ function firstParam(value: string | string[] | undefined): string | undefined {
   return normalizedValue || undefined;
 }
 
-function toolCardFromRegistry(tool: DentistSuccessHubTool) {
-  return {
-    title: tool.title,
-    description: tool.shortDescription,
-    href: `/dentist-success-hub/tools/${tool.slug}`,
-    eyebrow: tool.category,
-    badge: statusLabels[tool.status],
-    footer: tool.estimatedTime,
-  };
-}
-
-function categorySlug(category: string): string {
-  return category
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-function categoryDescription(category: DentistSuccessHubTool["category"]): string {
-  const descriptions: Record<DentistSuccessHubTool["category"], string> = {
-    Marketing: "Plan patient acquisition, local search visibility, campaigns, and review growth.",
-    Financial: "Model production, collections, patient value, margins, and long-term practice economics.",
-    Operations: "Evaluate capacity, scheduling, recall, no-shows, and operatory performance.",
-    AI: "Preview future AI workflows for dental content, communication, and office productivity.",
-    "Profile & Visibility": "Improve directory accuracy, completeness, trust signals, and listing ownership.",
-    Resources: "Use practical analysis tools and guidance built for dental teams.",
-  };
-
-  return descriptions[category];
-}
 
 function titleCase(value: string): string {
   return value

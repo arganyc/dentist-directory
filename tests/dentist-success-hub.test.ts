@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
+import { getDentistSuccessHubFeaturedTools } from "../src/lib/dentist-success-hub-tools.ts";
+
 const pagePath = new URL("../src/app/dentist-success-hub/page.tsx", import.meta.url);
 const pageSource = readFileSync(pagePath, "utf8");
 const navbarSource = readFileSync(new URL("../src/components/Navbar.tsx", import.meta.url), "utf8");
@@ -36,22 +38,12 @@ test("Dentist Success Hub includes requested CTAs and trust notes", () => {
   assert.match(pageSource, /Create Free Account/);
 });
 
-test("Dentist Success Hub presents all requested featured tools as coming soon", () => {
-  for (const tool of [
-    "No-Show Cost Calculator",
-    "New Patient Lifetime Value",
-    "Production Goal Calculator",
-    "Chair Utilization",
-    "Marketing ROI",
-    "Google Business Audit",
-    "Local SEO Audit",
-    "Practice Profile Score",
-    "AI Practice Description",
-    "Google Review Analyzer",
-  ]) {
-    assert.match(pageSource, new RegExp(tool));
-  }
-  assert.match(pageSource, /Coming Soon/);
+test("Dentist Success Hub presents featured tools from the registry", () => {
+  assert.match(pageSource, /getDentistSuccessHubFeaturedTools/);
+  assert.match(pageSource, /getDentistSuccessHubToolHref/);
+  assert.doesNotMatch(pageSource, /const FEATURED_TOOLS/);
+  assert.equal(getDentistSuccessHubFeaturedTools().length, 10);
+  assert.ok(getDentistSuccessHubFeaturedTools().every((tool) => tool.title && tool.shortDescription));
 });
 
 test("Dentist Success Hub is wired into navigation sitemap and SEO metadata", () => {

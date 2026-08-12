@@ -10,6 +10,7 @@ import {
   ToolGrid,
   ToolHeader,
   ToolHero,
+  ToolJsonLd,
   ToolPage,
   ToolRecommendations,
   ToolSidebar,
@@ -18,6 +19,9 @@ import {
 import {
   DENTIST_SUCCESS_HUB_TOOLS,
   getDentistSuccessHubTool,
+  getDentistSuccessHubRelatedTools,
+  getDentistSuccessHubStatusLabel,
+  toDentistSuccessHubToolCard,
   type DentistSuccessHubTool,
 } from "@/lib/dentist-success-hub-tools";
 import {
@@ -54,13 +58,11 @@ export default async function DentistSuccessHubToolDetailPage({ params }: RouteP
 
   if (!tool) notFound();
 
-  const relatedTools = tool.relatedTools
-    .map((relatedSlug) => getDentistSuccessHubTool(relatedSlug))
-    .filter((relatedTool): relatedTool is DentistSuccessHubTool => Boolean(relatedTool));
+  const relatedTools = getDentistSuccessHubRelatedTools(tool);
 
   return (
     <ToolPage>
-      <JsonLd data={getDentistSuccessHubToolSeoSchemas(tool)} />
+      <ToolJsonLd data={getDentistSuccessHubToolSeoSchemas(tool)} />
 
       <ToolBreadcrumb
         items={[
@@ -78,7 +80,7 @@ export default async function DentistSuccessHubToolDetailPage({ params }: RouteP
         secondaryAction={{ label: "Back to tools", href: "/dentist-success-hub/tools" }}
         meta={
           <div className="flex flex-wrap gap-3">
-            <span>{statusLabel(tool.status)}</span>
+            <span>{getDentistSuccessHubStatusLabel(tool.status)}</span>
             <span aria-hidden>|</span>
             <span>{tool.estimatedTime}</span>
             <span aria-hidden>|</span>
@@ -118,7 +120,7 @@ export default async function DentistSuccessHubToolDetailPage({ params }: RouteP
                   </div>
                   <div>
                     <dt className="font-bold text-slate-900">Status</dt>
-                    <dd>{statusLabel(tool.status)}</dd>
+                    <dd>{getDentistSuccessHubStatusLabel(tool.status)}</dd>
                   </div>
                   <div>
                     <dt className="font-bold text-slate-900">Estimated time</dt>
@@ -145,12 +147,7 @@ export default async function DentistSuccessHubToolDetailPage({ params }: RouteP
 
       <ToolRecommendations
         title="Related tools"
-        items={relatedTools.map((relatedTool) => ({
-          title: relatedTool.title,
-          description: relatedTool.shortDescription,
-          href: `/dentist-success-hub/tools/${relatedTool.slug}`,
-          badge: statusLabel(relatedTool.status),
-        }))}
+        items={relatedTools.map(toDentistSuccessHubToolCard)}
       />
 
       <ToolFAQ items={faqForTool(tool)} />
@@ -165,14 +162,10 @@ export default async function DentistSuccessHubToolDetailPage({ params }: RouteP
   );
 }
 
-function JsonLd({ data }: { data: unknown }) {
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
-}
-
 function ToolStatusPanel({ tool }: { tool: DentistSuccessHubTool }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 shadow-sm">
-      <p className="text-sm font-bold uppercase text-cyan-700">{statusLabel(tool.status)}</p>
+      <p className="text-sm font-bold uppercase text-cyan-700">{getDentistSuccessHubStatusLabel(tool.status)}</p>
       <h2 className="mt-3 text-2xl font-semibold text-slate-950">{tool.badge} workspace</h2>
       <p className="mt-3 text-sm leading-6 text-slate-600">
         This route is powered by the Dentist Success Hub registry, so metadata, SEO copy, status, and related tools
@@ -293,17 +286,6 @@ function primaryActionForTool(tool: DentistSuccessHubTool) {
     return { label: "Browse active tools", href: "/dentist-success-hub/tools?status=active#tool-results" };
   }
   return { label: "Preview workspace", href: "#workspace" };
-}
-
-function statusLabel(status: DentistSuccessHubTool["status"]): string {
-  const labels: Record<DentistSuccessHubTool["status"], string> = {
-    active: "Active",
-    beta: "Beta",
-    "coming-soon": "Coming Soon",
-    premium: "Premium",
-  };
-
-  return labels[status];
 }
 
 function faqForTool(tool: DentistSuccessHubTool): ToolFAQItem[] {

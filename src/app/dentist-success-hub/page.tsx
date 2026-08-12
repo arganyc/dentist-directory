@@ -2,6 +2,14 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { ToolJsonLd } from "@/components/tool-engine";
+import {
+  getDentistSuccessHubCategorySummaries,
+  getDentistSuccessHubFeaturedTools,
+  getDentistSuccessHubStatusLabel,
+  getDentistSuccessHubToolHref,
+} from "@/lib/dentist-success-hub-tools";
+
 const SITE_URL = "https://www.usdentistsdirectory.com";
 const PAGE_URL = `${SITE_URL}/dentist-success-hub`;
 
@@ -67,114 +75,6 @@ const FEATURES = [
     title: "Grow with confidence",
     body: "Move from scattered guesses to focused next steps for your team and listing.",
     icon: "shield",
-  },
-] as const;
-
-const CATEGORIES = [
-  {
-    name: "Marketing",
-    description: "Measure channels, acquisition costs, reviews, and patient growth campaigns.",
-    count: 6,
-    href: "/dentist-success-hub/tools#marketing",
-    icon: "target",
-  },
-  {
-    name: "Financial",
-    description: "Model lifetime value, production goals, collections, profitability, and valuation.",
-    count: 7,
-    href: "/dentist-success-hub/tools#financial",
-    icon: "wallet",
-  },
-  {
-    name: "Operations",
-    description: "Find capacity, no-show, recall, schedule, and chair utilization opportunities.",
-    count: 7,
-    href: "/dentist-success-hub/tools#operations",
-    icon: "flow",
-  },
-  {
-    name: "AI",
-    description: "Draft practice descriptions, posts, emails, review replies, and campaigns faster.",
-    count: 8,
-    href: "/dentist-success-hub/tools#ai",
-    icon: "spark",
-  },
-  {
-    name: "Profile & Visibility",
-    description: "Audit listing completeness, claim status, missing fields, and local visibility.",
-    count: 5,
-    href: "/dentist-success-hub/tools#profile-and-visibility",
-    icon: "profile",
-  },
-  {
-    name: "Resources",
-    description: "Use practical guides and templates built for practice owners and office managers.",
-    count: 12,
-    href: "/for-dentists",
-    icon: "book",
-  },
-] as const;
-
-const FEATURED_TOOLS = [
-  {
-    name: "No-Show Cost Calculator",
-    category: "Operations",
-    time: "3 min",
-    description: "Estimate the monthly and annual production lost to broken appointments.",
-  },
-  {
-    name: "New Patient Lifetime Value",
-    category: "Financial",
-    time: "4 min",
-    description: "Understand how much each new patient can contribute over time.",
-  },
-  {
-    name: "Production Goal Calculator",
-    category: "Financial",
-    time: "3 min",
-    description: "Set daily and monthly production targets that match your capacity.",
-  },
-  {
-    name: "Chair Utilization",
-    category: "Operations",
-    time: "4 min",
-    description: "See how effectively your operatories are being converted into production.",
-  },
-  {
-    name: "Marketing ROI",
-    category: "Marketing",
-    time: "5 min",
-    description: "Compare spend, leads, booked visits, and value by marketing channel.",
-  },
-  {
-    name: "Google Business Audit",
-    category: "Marketing",
-    time: "6 min",
-    description: "Review the core signals patients see before calling your office.",
-  },
-  {
-    name: "Local SEO Audit",
-    category: "SEO",
-    time: "6 min",
-    description: "Identify local search gaps across location, services, and listing content.",
-  },
-  {
-    name: "Practice Profile Score",
-    category: "Profile",
-    time: "2 min",
-    description: "Check whether your public profile has the fields patients need to act.",
-  },
-  {
-    name: "AI Practice Description",
-    category: "AI",
-    time: "2 min",
-    description: "Prepare a polished first draft for patient-facing practice copy.",
-  },
-  {
-    name: "Google Review Analyzer",
-    category: "AI",
-    time: "5 min",
-    description: "Turn review themes into practical service and communication insights.",
   },
 ] as const;
 
@@ -245,12 +145,12 @@ const jsonLd = {
 };
 
 export default function DentistSuccessHubPage() {
+  const categories = getDentistSuccessHubCategorySummaries();
+  const featuredTools = getDentistSuccessHubFeaturedTools();
+
   return (
     <div className="bg-white text-slate-950">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
-      />
+      <ToolJsonLd data={jsonLd} />
 
       <section className="relative isolate overflow-hidden bg-slate-950 text-white">
         <Image
@@ -371,7 +271,7 @@ export default function DentistSuccessHubPage() {
             body="Start with one focused workspace, then build a history of reports and improvements as DentistOS expands."
           />
           <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {CATEGORIES.map((category) => (
+            {categories.map((category) => (
               <Link
                 key={category.name}
                 href={category.href}
@@ -401,13 +301,14 @@ export default function DentistSuccessHubPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
             eyebrow="Featured Tools"
-            title="Polished practice workspaces are coming next."
-            body="These are presented as the product roadmap for the hub. Functionality will arrive behind the existing DentistOS foundation without changing the public directory."
+            title="Featured practice workspaces from the hub."
+            body="These cards are generated from the shared Tool Registry so titles, categories, timing, status, and descriptions stay connected across the product."
           />
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {FEATURED_TOOLS.map((tool) => (
-              <article
-                key={tool.name}
+            {featuredTools.map((tool) => (
+              <Link
+                key={tool.slug}
+                href={getDentistSuccessHubToolHref(tool)}
                 className="flex min-h-64 flex-col rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
               >
                 <div className="flex items-start justify-between gap-2">
@@ -419,16 +320,16 @@ export default function DentistSuccessHubPage() {
                   </span>
                 </div>
                 <h3 className="mt-5 text-lg font-bold leading-6 text-slate-950">
-                  {tool.name}
+                  {tool.title}
                 </h3>
-                <p className="mt-3 flex-1 text-sm leading-6 text-slate-600">{tool.description}</p>
+                <p className="mt-3 flex-1 text-sm leading-6 text-slate-600">{tool.shortDescription}</p>
                 <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-xs font-bold">
-                  <span className="text-slate-500">{tool.time}</span>
+                  <span className="text-slate-500">{tool.estimatedTime}</span>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-                    Coming Soon
+                    {getDentistSuccessHubStatusLabel(tool.status)}
                   </span>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </div>

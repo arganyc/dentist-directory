@@ -7,10 +7,17 @@ import {
   DENTIST_SUCCESS_HUB_TOOLS,
   DENTIST_SUCCESS_HUB_TOOL_STATUSES,
   DENTIST_SUCCESS_HUB_TOOL_TYPES,
+  getDentistSuccessHubActiveTools,
+  getDentistSuccessHubCategorySummaries,
   getDentistSuccessHubTool,
   getDentistSuccessHubEstimatedTimes,
+  getDentistSuccessHubFeaturedTools,
+  getDentistSuccessHubRelatedTools,
+  getDentistSuccessHubStatusLabel,
+  getDentistSuccessHubToolHref,
   getDentistSuccessHubToolsByCategory,
   searchDentistSuccessHubTools,
+  toDentistSuccessHubToolCard,
   validateToolRegistry,
   type DentistSuccessHubTool,
 } from "../src/lib/dentist-success-hub-tools.ts";
@@ -87,6 +94,53 @@ test("tool registry lookup helpers return deterministic slices", () => {
   assert.deepEqual(
     aiTools.map((tool) => tool.slug),
     DENTIST_SUCCESS_HUB_TOOLS.filter((tool) => tool.category === "AI").map((tool) => tool.slug)
+  );
+});
+
+test("tool registry view helpers derive active featured categories and cards", () => {
+  const activeTools = getDentistSuccessHubActiveTools();
+  const featuredTools = getDentistSuccessHubFeaturedTools();
+  const categorySummaries = getDentistSuccessHubCategorySummaries();
+  const noShowTool = getDentistSuccessHubTool("no-show-cost-calculator");
+
+  assert.ok(noShowTool);
+  assert.deepEqual(
+    activeTools.map((tool) => tool.slug),
+    DENTIST_SUCCESS_HUB_TOOLS.filter((tool) => tool.status === "active").map((tool) => tool.slug)
+  );
+  assert.deepEqual(featuredTools.map((tool) => tool.slug), [
+    "no-show-cost-calculator",
+    "new-patient-lifetime-value",
+    "daily-production-goal-calculator",
+    "chair-utilization-calculator",
+    "marketing-roi-calculator",
+    "google-business-profile-audit",
+    "local-seo-audit",
+    "practice-profile-score",
+    "ai-practice-description-generator",
+    "google-review-analyzer",
+  ]);
+  assert.equal(categorySummaries.length, DENTIST_SUCCESS_HUB_CATEGORIES.length);
+  assert.ok(categorySummaries.every((category) => category.count > 0 && category.href.includes(category.anchor)));
+  assert.equal(getDentistSuccessHubToolHref(noShowTool), "/dentist-success-hub/tools/no-show-cost-calculator");
+  assert.equal(getDentistSuccessHubStatusLabel(noShowTool.status), "Active");
+  assert.deepEqual(toDentistSuccessHubToolCard(noShowTool), {
+    title: noShowTool.title,
+    description: noShowTool.shortDescription,
+    href: "/dentist-success-hub/tools/no-show-cost-calculator",
+    eyebrow: noShowTool.category,
+    badge: "Active",
+    footer: noShowTool.estimatedTime,
+  });
+});
+
+test("tool registry resolves related tools from related slugs", () => {
+  const tool = getDentistSuccessHubTool("no-show-cost-calculator");
+  assert.ok(tool);
+
+  assert.deepEqual(
+    getDentistSuccessHubRelatedTools(tool).map((relatedTool) => relatedTool.slug),
+    tool.relatedTools
   );
 });
 
