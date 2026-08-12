@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import CancellationLossCalculator from "@/app/tools/dental-cancellation-loss-calculator/CancellationLossCalculator";
 import {
   ToolBreadcrumb,
   ToolCard,
@@ -93,7 +94,7 @@ export default async function DentistSuccessHubToolDetailPage({ params }: RouteP
 
       <div id="workspace" className="grid gap-8 border-t border-slate-200 py-10 lg:grid-cols-[1fr_320px]">
         <main className="space-y-8">
-          {tool.status === "active" && <ActiveToolPlaceholder tool={tool} />}
+          {tool.status === "active" && <ActiveToolWorkspace tool={tool} />}
           {tool.status === "coming-soon" && <ComingSoonPreview tool={tool} />}
           {tool.status === "premium" && <PremiumPreview tool={tool} />}
           {tool.status === "beta" && <BetaPreview tool={tool} />}
@@ -182,6 +183,43 @@ function ToolStatusPanel({ tool }: { tool: DentistSuccessHubTool }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function ActiveToolWorkspace({ tool }: { tool: DentistSuccessHubTool }) {
+  if (tool.slug === "no-show-cost-calculator") {
+    return <NoShowCostCalculatorWorkspace />;
+  }
+
+  return <ActiveToolPlaceholder tool={tool} />;
+}
+
+function NoShowCostCalculatorWorkspace() {
+  return (
+    <section className="space-y-6">
+      <ToolHeader
+        eyebrow="Active calculator"
+        title="Calculate missed-appointment cost"
+        description="Adjust the inputs below to estimate weekly, monthly, and annual production lost to cancellations, no-shows, and unfilled chair time."
+      />
+
+      <CancellationLossCalculator />
+
+      <ToolGrid columns="two">
+        <ToolCard
+          title="Save reports in DentistOS"
+          description="Saved report history is planned for a later phase. This version keeps calculations in the browser and does not persist practice data."
+          badge="Future"
+          href="/login"
+        />
+        <ToolCard
+          title="Claim your listing"
+          description="Connect your public listing so future DentistOS workspaces can tie reports and recommendations to the correct practice."
+          badge="Free"
+          href="/claim?source=no-show-cost-calculator"
+        />
+      </ToolGrid>
+    </section>
   );
 }
 

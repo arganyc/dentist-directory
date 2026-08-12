@@ -2,21 +2,14 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-
-type Inputs = {
-  averageProduction: number;
-  cancellationsPerWeek: number;
-  noShowsPerWeek: number;
-  rebookingRate: number;
-  chairHoursPerVisit: number;
-  workingWeeks: number;
-  hygieneVisitValue: number;
-  treatmentVisitValue: number;
-  newPatientValue: number;
-};
+import {
+  calculateNoShowCost,
+  noShowCostCalculatorInitialInputs,
+  type NoShowCostCalculatorInputs,
+} from "@/lib/no-show-cost-calculator";
 
 type FieldConfig = {
-  key: keyof Inputs;
+  key: keyof NoShowCostCalculatorInputs;
   label: string;
   prefix?: string;
   suffix?: string;
@@ -97,18 +90,6 @@ const fields: FieldConfig[] = [
   },
 ];
 
-const initialInputs: Inputs = {
-  averageProduction: 525,
-  cancellationsPerWeek: 7,
-  noShowsPerWeek: 3,
-  rebookingRate: 45,
-  chairHoursPerVisit: 1,
-  workingWeeks: 48,
-  hygieneVisitValue: 185,
-  treatmentVisitValue: 950,
-  newPatientValue: 900,
-};
-
 function currency(value: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -126,41 +107,11 @@ function clamp(value: number, min: number, max: number) {
 }
 
 export default function CancellationLossCalculator() {
-  const [inputs, setInputs] = useState<Inputs>(initialInputs);
+  const [inputs, setInputs] = useState<NoShowCostCalculatorInputs>(noShowCostCalculatorInitialInputs);
 
-  const results = useMemo(() => {
-    const unrecoveredCancellationRate = 1 - inputs.rebookingRate / 100;
-    const weeklyCancellationLoss =
-      inputs.cancellationsPerWeek * inputs.averageProduction * unrecoveredCancellationRate;
-    const weeklyNoShowLoss = inputs.noShowsPerWeek * inputs.averageProduction;
-    const weeklyLoss = weeklyCancellationLoss + weeklyNoShowLoss;
-    const annualLoss = weeklyLoss * inputs.workingWeeks;
-    const monthlyLoss = annualLoss / 12;
-    const missedVisits = inputs.cancellationsPerWeek + inputs.noShowsPerWeek;
-    const annualChairHours = missedVisits * inputs.chairHoursPerVisit * inputs.workingWeeks;
-    const hygieneAtRisk = missedVisits * 0.6 * inputs.hygieneVisitValue * inputs.workingWeeks;
-    const treatmentAtRisk = missedVisits * 0.4 * inputs.treatmentVisitValue * inputs.workingWeeks;
-    const newPatientsToOffset = Math.ceil(annualLoss / Math.max(inputs.newPatientValue, 1));
-    const recovered25 = annualLoss * 0.25;
-    const recovered50 = annualLoss * 0.5;
-    const recovered75 = annualLoss * 0.75;
+  const results = useMemo(() => calculateNoShowCost(inputs), [inputs]);
 
-    return {
-      weeklyLoss,
-      monthlyLoss,
-      annualLoss,
-      missedVisits,
-      annualChairHours,
-      hygieneAtRisk,
-      treatmentAtRisk,
-      newPatientsToOffset,
-      recovered25,
-      recovered50,
-      recovered75,
-    };
-  }, [inputs]);
-
-  function updateInput(key: keyof Inputs, rawValue: string, config: FieldConfig) {
+  function updateInput(key: keyof NoShowCostCalculatorInputs, rawValue: string, config: FieldConfig) {
     const parsed = Number(rawValue);
     if (Number.isNaN(parsed)) return;
     setInputs((current) => ({
@@ -181,7 +132,7 @@ export default function CancellationLossCalculator() {
           </div>
           <button
             type="button"
-            onClick={() => setInputs(initialInputs)}
+            onClick={() => setInputs(noShowCostCalculatorInitialInputs)}
             className="w-full rounded-md border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 sm:w-auto"
           >
             Reset
