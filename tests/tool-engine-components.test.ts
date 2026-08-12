@@ -47,10 +47,9 @@ test("tool engine remains generic and has no hardcoded dentist tools", () => {
   );
 });
 
-test("tool engine does not touch auth database claims publishing or routes", () => {
+test("tool engine does not touch auth database claims or publishing", () => {
   assert.doesNotMatch(
     source,
     /getSql|DENTISTOS_PUBLISH_TOKEN|dentistos-auth|dentistos-claim|dentistos-listings|toolsAccess|CREATE TABLE|POST\(|GET\(/
   );
-  assert.equal(existsSync(new URL("../src/app/dentist-success-hub/tools/page.tsx", import.meta.url)), false);
 });

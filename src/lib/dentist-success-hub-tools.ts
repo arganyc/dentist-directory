@@ -263,10 +263,10 @@ export const DENTIST_SUCCESS_HUB_TOOLS = [
     shortDescription: "Create a rough planning estimate using production, profit, and risk signals.",
     category: "Financial",
     toolType: "report",
-    status: "coming-soon",
+    status: "premium",
     estimatedTime: "8 min",
     icon: "briefcase",
-    badge: "Valuation",
+    badge: "Premium",
     seoTitle: "Dental Practice Valuation Estimator",
     seoDescription:
       "Estimate dental practice valuation ranges for planning using revenue and profitability inputs.",
