@@ -17,6 +17,7 @@ export async function GET() {
     { loc: `${base}/dentists-by-state`, priority: '0.9', changefreq: 'weekly' },
     { loc: `${base}/dmv-dentists`, priority: '0.9', changefreq: 'weekly' },
     { loc: `${base}/for-dentists`, priority: '0.8', changefreq: 'monthly' },
+    { loc: `${base}/dentist-success-hub`, priority: '0.8', changefreq: 'monthly' },
     { loc: `${base}/for-dentists/claim-outreach`, priority: '0.8', changefreq: 'monthly' },
     { loc: `${base}/for-dentists/google-business-profile-strategy`, priority: '0.8', changefreq: 'monthly' },
     { loc: `${base}/tools/dental-cancellation-loss-calculator`, priority: '0.8', changefreq: 'monthly' },

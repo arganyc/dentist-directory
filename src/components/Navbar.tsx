@@ -35,6 +35,12 @@ export default function Navbar() {
             For Dentists
           </Link>
           <Link
+            href="/dentist-success-hub"
+            className="hidden rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 xl:inline-block"
+          >
+            Dentist Success Hub
+          </Link>
+          <Link
             href="/tools"
             className="hidden rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 lg:inline-block"
           >
