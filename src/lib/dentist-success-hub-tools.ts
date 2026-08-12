@@ -195,7 +195,7 @@ export const DENTIST_SUCCESS_HUB_TOOLS = [
     shortDescription: "Find the real cost to acquire a booked new patient from each channel.",
     category: "Marketing",
     toolType: "calculator",
-    status: "coming-soon",
+    status: "active",
     estimatedTime: "4 min",
     icon: "user-plus",
     badge: "CAC",

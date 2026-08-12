@@ -3,48 +3,35 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import SliderField, { type FieldConfig, clamp, formatCurrency } from "@/components/tools/SliderField";
+import {
+  calculatePatientAcquisitionCost,
+  patientAcquisitionCostInitialInputs,
+  type PatientAcquisitionCostCalculatorInputs,
+} from "@/lib/calculators/patient-acquisition-cost";
 
-type Inputs = {
-  monthlyMarketingSpend: number;
-  newPatientsPerMonth: number;
-  avgAnnualPatientValue: number;
-  avgRetentionYears: number;
-};
-
-const fields: FieldConfig<keyof Inputs>[] = [
+const fields: FieldConfig<keyof PatientAcquisitionCostCalculatorInputs>[] = [
   { key: "monthlyMarketingSpend", label: "Monthly marketing spend", prefix: "$", min: 200, max: 20000, step: 100 },
   { key: "newPatientsPerMonth", label: "New patients per month", min: 1, max: 60, step: 1 },
   { key: "avgAnnualPatientValue", label: "Average annual value per patient", prefix: "$", min: 300, max: 3000, step: 50 },
   { key: "avgRetentionYears", label: "Average patient retention", suffix: " yrs", min: 1, max: 15, step: 0.5 },
 ];
 
-const initialInputs: Inputs = {
-  monthlyMarketingSpend: 2500,
-  newPatientsPerMonth: 14,
-  avgAnnualPatientValue: 750,
-  avgRetentionYears: 6,
-};
-
 export default function NewPatientCacCalculator() {
-  const [inputs, setInputs] = useState<Inputs>(initialInputs);
+  const [inputs, setInputs] = useState<PatientAcquisitionCostCalculatorInputs>(
+    patientAcquisitionCostInitialInputs
+  );
 
-  const results = useMemo(() => {
-    const cac = inputs.monthlyMarketingSpend / Math.max(inputs.newPatientsPerMonth, 1);
-    const lifetimeValue = inputs.avgAnnualPatientValue * inputs.avgRetentionYears;
-    const ltvToCacRatio = lifetimeValue / Math.max(cac, 1);
-    const paybackMonths = cac / Math.max(inputs.avgAnnualPatientValue / 12, 1);
-    const annualMarketingSpend = inputs.monthlyMarketingSpend * 12;
-    const annualNewPatients = inputs.newPatientsPerMonth * 12;
-    return { cac, lifetimeValue, ltvToCacRatio, paybackMonths, annualMarketingSpend, annualNewPatients };
-  }, [inputs]);
+  const results = useMemo(() => calculatePatientAcquisitionCost(inputs), [inputs]);
 
-  function updateInput(key: keyof Inputs, rawValue: string, field: FieldConfig<keyof Inputs>) {
+  function updateInput(
+    key: keyof PatientAcquisitionCostCalculatorInputs,
+    rawValue: string,
+    field: FieldConfig<keyof PatientAcquisitionCostCalculatorInputs>
+  ) {
     const parsed = Number(rawValue);
     if (Number.isNaN(parsed)) return;
     setInputs((current) => ({ ...current, [key]: clamp(parsed, field.min, field.max) }));
   }
-
-  const healthLabel = results.ltvToCacRatio >= 3 ? "healthy" : results.ltvToCacRatio >= 1.5 ? "workable" : "tight";
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
@@ -58,7 +45,7 @@ export default function NewPatientCacCalculator() {
           </div>
           <button
             type="button"
-            onClick={() => setInputs(initialInputs)}
+            onClick={() => setInputs(patientAcquisitionCostInitialInputs)}
             className="w-full rounded-md border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 sm:w-auto"
           >
             Reset
@@ -78,7 +65,7 @@ export default function NewPatientCacCalculator() {
           <p className="mt-3 text-sm leading-relaxed text-blue-100">
             Lifetime value to acquisition cost ratio is{" "}
             <span className="font-semibold text-white">{results.ltvToCacRatio.toFixed(1)}x</span> — a{" "}
-            {healthLabel} range (3x+ is the common target).
+            {results.healthLabel} range (3x+ is the common target).
           </p>
           <div className="mt-6 grid grid-cols-2 gap-3">
             <div className="rounded-md bg-white/10 p-3 ring-1 ring-white/15">
