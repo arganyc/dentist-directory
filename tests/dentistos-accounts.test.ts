@@ -38,6 +38,7 @@ test("migration creates DentistOS account foundation tables without altering exi
   for (const table of [
     "users",
     "user_sessions",
+    "auth_magic_links",
     "practices",
     "practice_memberships",
     "practice_listing_links",
@@ -52,7 +53,9 @@ test("migration creates DentistOS account foundation tables without altering exi
 test("migration stores only hashed session tokens with expiration", () => {
   assert.match(migrationSource, /session_token_hash\s+TEXT UNIQUE NOT NULL/);
   assert.match(migrationSource, /expires_at\s+TIMESTAMPTZ NOT NULL/);
-  assert.doesNotMatch(migrationSource, /raw_session_token|session_token\s+TEXT/i);
+  assert.match(migrationSource, /token_hash\s+TEXT UNIQUE NOT NULL/);
+  assert.match(migrationSource, /consumed_at\s+TIMESTAMPTZ/);
+  assert.doesNotMatch(migrationSource, /raw_session_token|raw_magic_token|session_token\s+TEXT/i);
 });
 
 test("migration defines relationship constraints for account and practice tables", () => {

@@ -287,6 +287,7 @@ async function main(): Promise<void> {
     console.log("Dropping existing schema (--reset)...");
     await sql`DROP TABLE IF EXISTS practice_listing_links`;
     await sql`DROP TABLE IF EXISTS practice_memberships`;
+    await sql`DROP TABLE IF EXISTS auth_magic_links`;
     await sql`DROP TABLE IF EXISTS user_sessions`;
     await sql`DROP TABLE IF EXISTS practices`;
     await sql`DROP TABLE IF EXISTS users`;
@@ -360,6 +361,17 @@ async function main(): Promise<void> {
     )
   `;
   await sql`
+    CREATE TABLE IF NOT EXISTS auth_magic_links (
+      id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      email        TEXT NOT NULL,
+      token_hash   TEXT UNIQUE NOT NULL,
+      expires_at   TIMESTAMPTZ NOT NULL,
+      consumed_at  TIMESTAMPTZ,
+      created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+  await sql`
     CREATE TABLE IF NOT EXISTS practices (
       id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       name        TEXT NOT NULL,
@@ -399,6 +411,10 @@ async function main(): Promise<void> {
   await sql`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_auth_magic_links_user_id ON auth_magic_links(user_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_auth_magic_links_email ON auth_magic_links(email)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_auth_magic_links_expires_at ON auth_magic_links(expires_at)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_auth_magic_links_consumed_at ON auth_magic_links(consumed_at)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_practice_memberships_user_id ON practice_memberships(user_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_practice_memberships_practice_id ON practice_memberships(practice_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_practice_listing_links_practice_id ON practice_listing_links(practice_id)`;
