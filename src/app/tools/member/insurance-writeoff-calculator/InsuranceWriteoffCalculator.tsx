@@ -3,45 +3,29 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import SliderField, { type FieldConfig, clamp, formatCurrency } from "@/components/tools/SliderField";
+import {
+  calculatePpoFeeReduction,
+  ppoFeeReductionInitialInputs,
+  type PpoFeeReductionCalculatorInputs,
+} from "@/lib/calculators/ppo-fee-reduction";
 
-type Inputs = {
-  monthlyBilledProduction: number;
-  inNetworkPatientPct: number;
-  inNetworkAdjustmentPct: number;
-  outNetworkAdjustmentPct: number;
-};
-
-const fields: FieldConfig<keyof Inputs>[] = [
+const fields: FieldConfig<keyof PpoFeeReductionCalculatorInputs>[] = [
   { key: "monthlyBilledProduction", label: "Monthly billed production (full fee)", prefix: "$", min: 10000, max: 200000, step: 1000 },
   { key: "inNetworkPatientPct", label: "Share of patients in-network", suffix: "%", min: 0, max: 100, step: 5 },
   { key: "inNetworkAdjustmentPct", label: "Avg. in-network fee adjustment", suffix: "%", min: 10, max: 50, step: 1 },
   { key: "outNetworkAdjustmentPct", label: "Avg. out-of-network adjustment/discount", suffix: "%", min: 0, max: 25, step: 1 },
 ];
 
-const initialInputs: Inputs = {
-  monthlyBilledProduction: 90000,
-  inNetworkPatientPct: 70,
-  inNetworkAdjustmentPct: 28,
-  outNetworkAdjustmentPct: 8,
-};
-
 export default function InsuranceWriteoffCalculator() {
-  const [inputs, setInputs] = useState<Inputs>(initialInputs);
+  const [inputs, setInputs] = useState<PpoFeeReductionCalculatorInputs>(ppoFeeReductionInitialInputs);
 
-  const results = useMemo(() => {
-    const inNetworkShare = inputs.inNetworkPatientPct / 100;
-    const inNetworkBilled = inputs.monthlyBilledProduction * inNetworkShare;
-    const outNetworkBilled = inputs.monthlyBilledProduction * (1 - inNetworkShare);
-    const inNetworkWriteOff = inNetworkBilled * (inputs.inNetworkAdjustmentPct / 100);
-    const outNetworkWriteOff = outNetworkBilled * (inputs.outNetworkAdjustmentPct / 100);
-    const totalWriteOff = inNetworkWriteOff + outNetworkWriteOff;
-    const collectedProduction = inputs.monthlyBilledProduction - totalWriteOff;
-    const writeOffPct = (totalWriteOff / Math.max(inputs.monthlyBilledProduction, 1)) * 100;
-    const annualWriteOff = totalWriteOff * 12;
-    return { inNetworkWriteOff, outNetworkWriteOff, totalWriteOff, collectedProduction, writeOffPct, annualWriteOff };
-  }, [inputs]);
+  const results = useMemo(() => calculatePpoFeeReduction(inputs), [inputs]);
 
-  function updateInput(key: keyof Inputs, rawValue: string, field: FieldConfig<keyof Inputs>) {
+  function updateInput(
+    key: keyof PpoFeeReductionCalculatorInputs,
+    rawValue: string,
+    field: FieldConfig<keyof PpoFeeReductionCalculatorInputs>
+  ) {
     const parsed = Number(rawValue);
     if (Number.isNaN(parsed)) return;
     setInputs((current) => ({ ...current, [key]: clamp(parsed, field.min, field.max) }));
@@ -60,7 +44,7 @@ export default function InsuranceWriteoffCalculator() {
           </div>
           <button
             type="button"
-            onClick={() => setInputs(initialInputs)}
+            onClick={() => setInputs(ppoFeeReductionInitialInputs)}
             className="w-full rounded-md border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 sm:w-auto"
           >
             Reset

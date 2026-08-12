@@ -307,7 +307,7 @@ export const DENTIST_SUCCESS_HUB_TOOLS = [
     shortDescription: "Estimate how PPO write-offs affect production, collections, and margin.",
     category: "Financial",
     toolType: "calculator",
-    status: "coming-soon",
+    status: "active",
     estimatedTime: "5 min",
     icon: "percent",
     badge: "PPO",
