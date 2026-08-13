@@ -270,6 +270,26 @@ export const DENTIST_SUCCESS_HUB_TOOLS = [
     relatedTools: ["daily-production-goal-calculator", "break-even-calculator"],
   },
   {
+    slug: "case-acceptance-calculator",
+    title: "Case Acceptance Calculator",
+    shortDescription: "Estimate accepted production, missed treatment value, and target-rate upside.",
+    category: "Financial",
+    toolType: "calculator",
+    status: "active",
+    estimatedTime: "4 min",
+    icon: "check-circle",
+    badge: "Case Acceptance",
+    seoTitle: "Dental Case Acceptance Calculator",
+    seoDescription:
+      "Calculate dental case acceptance, accepted production, missed treatment value, and annual improvement opportunity.",
+    keywords: ["case acceptance", "treatment plans", "dental production", "accepted treatment"],
+    relatedTools: [
+      "monthly-production-goal-calculator",
+      "patient-acquisition-cost-calculator",
+      "overhead-percentage-calculator",
+    ],
+  },
+  {
     slug: "break-even-calculator",
     title: "Break-Even Calculator",
     shortDescription: "Estimate the production needed to cover fixed and variable practice costs.",

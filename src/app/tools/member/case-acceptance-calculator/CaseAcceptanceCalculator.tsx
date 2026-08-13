@@ -3,46 +3,29 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import SliderField, { type FieldConfig, clamp, formatCurrency, formatNumber } from "@/components/tools/SliderField";
+import {
+  calculateCaseAcceptance,
+  caseAcceptanceInitialInputs,
+  type CaseAcceptanceCalculatorInputs,
+} from "@/lib/calculators/case-acceptance";
 
-type Inputs = {
-  plansPresentedPerMonth: number;
-  averageCaseValue: number;
-  currentAcceptanceRate: number;
-  targetAcceptanceRate: number;
-};
-
-const fields: FieldConfig<keyof Inputs>[] = [
+const fields: FieldConfig<keyof CaseAcceptanceCalculatorInputs>[] = [
   { key: "plansPresentedPerMonth", label: "Treatment plans presented per month", min: 5, max: 150, step: 1 },
   { key: "averageCaseValue", label: "Average case value", prefix: "$", min: 200, max: 8000, step: 50 },
   { key: "currentAcceptanceRate", label: "Current acceptance rate", suffix: "%", min: 10, max: 90, step: 1 },
   { key: "targetAcceptanceRate", label: "Target acceptance rate", suffix: "%", min: 10, max: 95, step: 1 },
 ];
 
-const initialInputs: Inputs = {
-  plansPresentedPerMonth: 45,
-  averageCaseValue: 1400,
-  currentAcceptanceRate: 45,
-  targetAcceptanceRate: 65,
-};
-
 export default function CaseAcceptanceCalculator() {
-  const [inputs, setInputs] = useState<Inputs>(initialInputs);
+  const [inputs, setInputs] = useState<CaseAcceptanceCalculatorInputs>(caseAcceptanceInitialInputs);
 
-  const results = useMemo(() => {
-    const currentRate = inputs.currentAcceptanceRate / 100;
-    const targetRate = inputs.targetAcceptanceRate / 100;
-    const acceptedCases = inputs.plansPresentedPerMonth * currentRate;
-    const acceptedValue = acceptedCases * inputs.averageCaseValue;
-    const unacceptedCases = inputs.plansPresentedPerMonth * (1 - currentRate);
-    const lostValueMonthly = unacceptedCases * inputs.averageCaseValue;
-    const lostValueAnnual = lostValueMonthly * 12;
-    const valueAtTarget = inputs.plansPresentedPerMonth * targetRate * inputs.averageCaseValue;
-    const upliftMonthly = Math.max(valueAtTarget - acceptedValue, 0);
-    const upliftAnnual = upliftMonthly * 12;
-    return { acceptedCases, acceptedValue, unacceptedCases, lostValueMonthly, lostValueAnnual, upliftMonthly, upliftAnnual };
-  }, [inputs]);
+  const results = useMemo(() => calculateCaseAcceptance(inputs), [inputs]);
 
-  function updateInput(key: keyof Inputs, rawValue: string, field: FieldConfig<keyof Inputs>) {
+  function updateInput(
+    key: keyof CaseAcceptanceCalculatorInputs,
+    rawValue: string,
+    field: FieldConfig<keyof CaseAcceptanceCalculatorInputs>
+  ) {
     const parsed = Number(rawValue);
     if (Number.isNaN(parsed)) return;
     setInputs((current) => ({ ...current, [key]: clamp(parsed, field.min, field.max) }));
@@ -60,7 +43,7 @@ export default function CaseAcceptanceCalculator() {
           </div>
           <button
             type="button"
-            onClick={() => setInputs(initialInputs)}
+            onClick={() => setInputs(caseAcceptanceInitialInputs)}
             className="w-full rounded-md border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 sm:w-auto"
           >
             Reset

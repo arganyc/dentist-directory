@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import CaseAcceptanceCalculatorWorkspace from "@/components/case-acceptance-calculator-workspace";
 import NoShowCostCalculatorWorkspace from "@/components/no-show-cost-calculator-workspace";
 import OverheadPercentageCalculatorWorkspace from "@/components/overhead-percentage-calculator-workspace";
 import PatientAcquisitionCostCalculatorWorkspace from "@/components/patient-acquisition-cost-calculator-workspace";
@@ -203,6 +204,9 @@ function ActiveToolWorkspace({ tool }: { tool: DentistSuccessHubTool }) {
   if (tool.slug === "overhead-percentage-calculator") {
     return <OverheadPercentageCalculatorWorkspace />;
   }
+  if (tool.slug === "case-acceptance-calculator") {
+    return <CaseAcceptanceCalculatorWorkspace />;
+  }
 
   return <ActiveToolPlaceholder tool={tool} />;
 }
@@ -316,6 +320,7 @@ function workspaceIncludesDisclaimer(tool: DentistSuccessHubTool) {
     "patient-acquisition-cost-calculator",
     "ppo-fee-reduction-calculator",
     "overhead-percentage-calculator",
+    "case-acceptance-calculator",
   ].includes(tool.slug);
 }
 
@@ -332,6 +337,8 @@ function faqForTool(tool: DentistSuccessHubTool): ToolFAQItem[] {
               ? "Yes. This calculator is available now and uses the same shared calculation logic as the existing member Insurance Write-Off calculator."
               : tool.slug === "overhead-percentage-calculator"
                 ? "Yes. This calculator is available now and uses the same shared calculation logic as the existing member Overhead Percentage calculator."
+                : tool.slug === "case-acceptance-calculator"
+                  ? "Yes. This calculator is available now and uses the same shared calculation logic as the existing member Case Acceptance calculator."
           : tool.status === "active"
             ? "The route and placeholder workspace are available now. Full tool execution is intentionally deferred."
           : "This page is a preview. Full tool execution is intentionally deferred.",
@@ -357,6 +364,9 @@ function disclaimerForTool(tool: DentistSuccessHubTool) {
   }
   if (tool.slug === "ppo-fee-reduction-calculator") {
     return "This calculator is an estimate for practice business planning. It does not provide legal, financial, tax, accounting, payer-contract, or contract-negotiation advice, and results are not saved to DentistOS in this phase.";
+  }
+  if (tool.slug === "case-acceptance-calculator") {
+    return "This calculator is an estimate for practice business planning. It does not provide clinical, legal, financial, tax, or treatment-planning advice, and results are not saved to DentistOS in this phase.";
   }
 
   return "This page is a product workspace shell. It does not provide clinical, legal, financial, or tax advice, and this routing phase does not implement calculator or generator logic.";
