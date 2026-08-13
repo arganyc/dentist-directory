@@ -450,6 +450,26 @@ export const DENTIST_SUCCESS_HUB_TOOLS = [
     relatedTools: ["recall-revenue-calculator", "chair-utilization-calculator"],
   },
   {
+    slug: "hygiene-production-calculator",
+    title: "Hygiene Production Calculator",
+    shortDescription: "Estimate hygiene production per hour, daily output, and annual capacity.",
+    category: "Operations",
+    toolType: "calculator",
+    status: "active",
+    estimatedTime: "4 min",
+    icon: "clock",
+    badge: "Hygiene",
+    seoTitle: "Dental Hygiene Production Calculator",
+    seoDescription:
+      "Calculate hygiene production per hour, daily hygiene production, weekly output, and annual production.",
+    keywords: ["hygiene production", "dental hygiene", "production per hour", "hygiene capacity"],
+    relatedTools: [
+      "hygiene-capacity-calculator",
+      "recall-revenue-calculator",
+      "chair-utilization-calculator",
+    ],
+  },
+  {
     slug: "scheduling-efficiency-calculator",
     title: "Scheduling Efficiency Calculator",
     shortDescription: "Review how schedule gaps and appointment mix affect production.",

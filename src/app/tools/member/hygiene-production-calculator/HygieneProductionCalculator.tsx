@@ -3,16 +3,15 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import SliderField, { type FieldConfig, clamp, formatCurrency, formatNumber } from "@/components/tools/SliderField";
+import {
+  calculateHygieneProduction,
+  hygieneProductionInitialInputs,
+  HYGIENE_PRODUCTION_BENCHMARK_HIGH,
+  HYGIENE_PRODUCTION_BENCHMARK_LOW,
+  type HygieneProductionCalculatorInputs,
+} from "@/lib/calculators/hygiene-production";
 
-type Inputs = {
-  visitsPerDay: number;
-  avgProductionPerVisit: number;
-  chairHoursPerDay: number;
-  workingDaysPerWeek: number;
-  workingWeeksPerYear: number;
-};
-
-const fields: FieldConfig<keyof Inputs>[] = [
+const fields: FieldConfig<keyof HygieneProductionCalculatorInputs>[] = [
   { key: "visitsPerDay", label: "Hygiene visits per day", min: 4, max: 16, step: 1 },
   { key: "avgProductionPerVisit", label: "Average production per visit", prefix: "$", min: 80, max: 400, step: 10 },
   { key: "chairHoursPerDay", label: "Hygiene chair hours per day", suffix: " hrs", min: 4, max: 10, step: 0.5 },
@@ -20,31 +19,18 @@ const fields: FieldConfig<keyof Inputs>[] = [
   { key: "workingWeeksPerYear", label: "Working weeks per year", min: 35, max: 52, step: 1 },
 ];
 
-const initialInputs: Inputs = {
-  visitsPerDay: 9,
-  avgProductionPerVisit: 165,
-  chairHoursPerDay: 7,
-  workingDaysPerWeek: 4,
-  workingWeeksPerYear: 48,
-};
-
-const BENCHMARK_LOW = 120;
-const BENCHMARK_HIGH = 160;
-
 export default function HygieneProductionCalculator() {
-  const [inputs, setInputs] = useState<Inputs>(initialInputs);
+  const [inputs, setInputs] = useState<HygieneProductionCalculatorInputs>(
+    hygieneProductionInitialInputs
+  );
 
-  const results = useMemo(() => {
-    const dailyProduction = inputs.visitsPerDay * inputs.avgProductionPerVisit;
-    const hourlyProduction = dailyProduction / Math.max(inputs.chairHoursPerDay, 0.25);
-    const weeklyProduction = dailyProduction * inputs.workingDaysPerWeek;
-    const annualProduction = weeklyProduction * inputs.workingWeeksPerYear;
-    const vsBenchmark =
-      hourlyProduction < BENCHMARK_LOW ? "below" : hourlyProduction > BENCHMARK_HIGH ? "above" : "within";
-    return { dailyProduction, hourlyProduction, weeklyProduction, annualProduction, vsBenchmark };
-  }, [inputs]);
+  const results = useMemo(() => calculateHygieneProduction(inputs), [inputs]);
 
-  function updateInput(key: keyof Inputs, rawValue: string, field: FieldConfig<keyof Inputs>) {
+  function updateInput(
+    key: keyof HygieneProductionCalculatorInputs,
+    rawValue: string,
+    field: FieldConfig<keyof HygieneProductionCalculatorInputs>
+  ) {
     const parsed = Number(rawValue);
     if (Number.isNaN(parsed)) return;
     setInputs((current) => ({ ...current, [key]: clamp(parsed, field.min, field.max) }));
@@ -62,7 +48,7 @@ export default function HygieneProductionCalculator() {
           </div>
           <button
             type="button"
-            onClick={() => setInputs(initialInputs)}
+            onClick={() => setInputs(hygieneProductionInitialInputs)}
             className="w-full rounded-md border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 sm:w-auto"
           >
             Reset
@@ -80,7 +66,7 @@ export default function HygieneProductionCalculator() {
           <p className="text-sm font-semibold uppercase tracking-wider text-blue-100">Production per hour</p>
           <div className="mt-3 text-5xl font-extrabold tracking-tight">{formatCurrency(results.hourlyProduction)}</div>
           <p className="mt-3 text-sm leading-relaxed text-blue-100">
-            Common benchmark is ${BENCHMARK_LOW}-${BENCHMARK_HIGH}/hr. You&apos;re{" "}
+            Common benchmark is ${HYGIENE_PRODUCTION_BENCHMARK_LOW}-${HYGIENE_PRODUCTION_BENCHMARK_HIGH}/hr. You&apos;re{" "}
             <span className="font-semibold text-white">{results.vsBenchmark}</span> that range.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-3">
