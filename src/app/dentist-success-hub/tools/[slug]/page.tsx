@@ -7,6 +7,7 @@ import NoShowCostCalculatorWorkspace from "@/components/no-show-cost-calculator-
 import OverheadPercentageCalculatorWorkspace from "@/components/overhead-percentage-calculator-workspace";
 import PatientAcquisitionCostCalculatorWorkspace from "@/components/patient-acquisition-cost-calculator-workspace";
 import PpoFeeReductionCalculatorWorkspace from "@/components/ppo-fee-reduction-calculator-workspace";
+import StaffCostRatioCalculatorWorkspace from "@/components/staff-cost-ratio-calculator-workspace";
 import {
   ToolBreadcrumb,
   ToolCard,
@@ -211,6 +212,9 @@ function ActiveToolWorkspace({ tool }: { tool: DentistSuccessHubTool }) {
   if (tool.slug === "hygiene-production-calculator") {
     return <HygieneProductionCalculatorWorkspace />;
   }
+  if (tool.slug === "staff-cost-ratio-calculator") {
+    return <StaffCostRatioCalculatorWorkspace />;
+  }
 
   return <ActiveToolPlaceholder tool={tool} />;
 }
@@ -326,6 +330,7 @@ function workspaceIncludesDisclaimer(tool: DentistSuccessHubTool) {
     "overhead-percentage-calculator",
     "case-acceptance-calculator",
     "hygiene-production-calculator",
+    "staff-cost-ratio-calculator",
   ].includes(tool.slug);
 }
 
@@ -346,6 +351,8 @@ function faqForTool(tool: DentistSuccessHubTool): ToolFAQItem[] {
                   ? "Yes. This calculator is available now and uses the same shared calculation logic as the existing member Case Acceptance calculator."
                   : tool.slug === "hygiene-production-calculator"
                     ? "Yes. This calculator is available now and uses the same shared calculation logic as the existing member Hygiene Production calculator."
+                    : tool.slug === "staff-cost-ratio-calculator"
+                      ? "Yes. This calculator is available now and uses the same shared calculation logic as the existing member Staff Cost Ratio calculator."
           : tool.status === "active"
             ? "The route and placeholder workspace are available now. Full tool execution is intentionally deferred."
           : "This page is a preview. Full tool execution is intentionally deferred.",
@@ -377,6 +384,9 @@ function disclaimerForTool(tool: DentistSuccessHubTool) {
   }
   if (tool.slug === "hygiene-production-calculator") {
     return "This calculator is an estimate for practice business planning. It does not provide clinical, legal, financial, tax, staffing, or scheduling advice, and results are not saved to DentistOS in this phase.";
+  }
+  if (tool.slug === "staff-cost-ratio-calculator") {
+    return "This calculator is an estimate for practice business planning. It does not provide employment-law, tax, accounting, compensation, staffing, or financial advice, and results are not saved to DentistOS in this phase.";
   }
 
   return "This page is a product workspace shell. It does not provide clinical, legal, financial, or tax advice, and this routing phase does not implement calculator or generator logic.";

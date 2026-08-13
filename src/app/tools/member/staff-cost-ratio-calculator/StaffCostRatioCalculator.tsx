@@ -3,41 +3,32 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import SliderField, { type FieldConfig, clamp, formatCurrency } from "@/components/tools/SliderField";
+import {
+  calculateStaffCostRatio,
+  staffCostRatioInitialInputs,
+  STAFF_COST_RATIO_BENCHMARK_HIGH,
+  STAFF_COST_RATIO_BENCHMARK_LOW,
+  type StaffCostRatioCalculatorInputs,
+} from "@/lib/calculators/staff-cost-ratio";
 
-type Inputs = {
-  monthlyCollections: number;
-  totalStaffPayroll: number;
-  fteStaffCount: number;
-};
-
-const fields: FieldConfig<keyof Inputs>[] = [
+const fields: FieldConfig<keyof StaffCostRatioCalculatorInputs>[] = [
   { key: "monthlyCollections", label: "Monthly collections", prefix: "$", min: 10000, max: 200000, step: 1000 },
   { key: "totalStaffPayroll", label: "Total staff payroll & benefits (excl. owner-dentist)", prefix: "$", min: 2000, max: 80000, step: 500 },
   { key: "fteStaffCount", label: "Number of FTE staff (excl. owner-dentist)", min: 1, max: 25, step: 1 },
 ];
 
-const initialInputs: Inputs = {
-  monthlyCollections: 90000,
-  totalStaffPayroll: 24000,
-  fteStaffCount: 6,
-};
-
-const BENCHMARK_LOW = 25;
-const BENCHMARK_HIGH = 30;
-
 export default function StaffCostRatioCalculator() {
-  const [inputs, setInputs] = useState<Inputs>(initialInputs);
+  const [inputs, setInputs] = useState<StaffCostRatioCalculatorInputs>(
+    staffCostRatioInitialInputs
+  );
 
-  const results = useMemo(() => {
-    const staffCostRatio = (inputs.totalStaffPayroll / Math.max(inputs.monthlyCollections, 1)) * 100;
-    const payrollPerFte = inputs.totalStaffPayroll / Math.max(inputs.fteStaffCount, 1);
-    const annualPayroll = inputs.totalStaffPayroll * 12;
-    const vsBenchmark =
-      staffCostRatio < BENCHMARK_LOW ? "below" : staffCostRatio > BENCHMARK_HIGH ? "above" : "within";
-    return { staffCostRatio, payrollPerFte, annualPayroll, vsBenchmark };
-  }, [inputs]);
+  const results = useMemo(() => calculateStaffCostRatio(inputs), [inputs]);
 
-  function updateInput(key: keyof Inputs, rawValue: string, field: FieldConfig<keyof Inputs>) {
+  function updateInput(
+    key: keyof StaffCostRatioCalculatorInputs,
+    rawValue: string,
+    field: FieldConfig<keyof StaffCostRatioCalculatorInputs>
+  ) {
     const parsed = Number(rawValue);
     if (Number.isNaN(parsed)) return;
     setInputs((current) => ({ ...current, [key]: clamp(parsed, field.min, field.max) }));
@@ -55,7 +46,7 @@ export default function StaffCostRatioCalculator() {
           </div>
           <button
             type="button"
-            onClick={() => setInputs(initialInputs)}
+            onClick={() => setInputs(staffCostRatioInitialInputs)}
             className="w-full rounded-md border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 sm:w-auto"
           >
             Reset
@@ -73,7 +64,7 @@ export default function StaffCostRatioCalculator() {
           <p className="text-sm font-semibold uppercase tracking-wider text-blue-100">Staff cost ratio</p>
           <div className="mt-3 text-5xl font-extrabold tracking-tight">{results.staffCostRatio.toFixed(1)}%</div>
           <p className="mt-3 text-sm leading-relaxed text-blue-100">
-            Healthy range is typically {BENCHMARK_LOW}-{BENCHMARK_HIGH}% of collections. You&apos;re{" "}
+            Healthy range is typically {STAFF_COST_RATIO_BENCHMARK_LOW}-{STAFF_COST_RATIO_BENCHMARK_HIGH}% of collections. You&apos;re{" "}
             <span className="font-semibold text-white">{results.vsBenchmark}</span> that range.
           </p>
           <div className="mt-6 rounded-md bg-white/10 p-3 ring-1 ring-white/15">

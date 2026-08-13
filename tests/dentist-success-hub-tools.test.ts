@@ -166,7 +166,7 @@ test("tool registry filters by category status type and estimated time", () => {
     searchDentistSuccessHubTools({ category: "Operations", status: "active" }).map(
       (tool) => tool.slug
     ),
-    ["no-show-cost-calculator", "hygiene-production-calculator"]
+    ["no-show-cost-calculator", "staff-cost-ratio-calculator", "hygiene-production-calculator"]
   );
   assert.ok(searchDentistSuccessHubTools({ toolType: "audit" }).every((tool) => tool.toolType === "audit"));
   assert.ok(searchDentistSuccessHubTools({ status: "premium" }).every((tool) => tool.status === "premium"));

@@ -418,6 +418,26 @@ export const DENTIST_SUCCESS_HUB_TOOLS = [
     relatedTools: ["production-per-chair-calculator", "appointment-capacity-calculator"],
   },
   {
+    slug: "staff-cost-ratio-calculator",
+    title: "Staff Cost Ratio Calculator",
+    shortDescription: "Compare staff payroll and benefits against monthly collections.",
+    category: "Operations",
+    toolType: "calculator",
+    status: "active",
+    estimatedTime: "4 min",
+    icon: "users",
+    badge: "Staffing",
+    seoTitle: "Dental Staff Cost Ratio Calculator",
+    seoDescription:
+      "Calculate dental staff cost ratio, payroll per FTE, annual payroll, and benchmark status.",
+    keywords: ["staff cost ratio", "dental payroll", "practice staffing", "payroll per FTE"],
+    relatedTools: [
+      "overhead-percentage-calculator",
+      "hygiene-production-calculator",
+      "production-per-chair-calculator",
+    ],
+  },
+  {
     slug: "recall-revenue-calculator",
     title: "Recall Revenue Calculator",
     shortDescription: "Estimate the revenue opportunity hidden in overdue hygiene recall.",
