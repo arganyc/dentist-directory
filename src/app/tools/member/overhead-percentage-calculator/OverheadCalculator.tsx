@@ -3,17 +3,15 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import SliderField, { type FieldConfig, clamp, formatCurrency } from "@/components/tools/SliderField";
+import {
+  calculateOverheadPercentage,
+  overheadPercentageInitialInputs,
+  OVERHEAD_BENCHMARK_HIGH,
+  OVERHEAD_BENCHMARK_LOW,
+  type OverheadPercentageCalculatorInputs,
+} from "@/lib/calculators/overhead-percentage";
 
-type Inputs = {
-  monthlyCollections: number;
-  staffPayroll: number;
-  facilityRent: number;
-  labFees: number;
-  supplies: number;
-  otherOverhead: number;
-};
-
-const fields: FieldConfig<keyof Inputs>[] = [
+const fields: FieldConfig<keyof OverheadPercentageCalculatorInputs>[] = [
   { key: "monthlyCollections", label: "Monthly collections", prefix: "$", min: 10000, max: 200000, step: 1000 },
   { key: "staffPayroll", label: "Staff payroll & benefits", prefix: "$", min: 2000, max: 80000, step: 500 },
   { key: "facilityRent", label: "Rent / facility costs", prefix: "$", min: 500, max: 25000, step: 250 },
@@ -22,37 +20,18 @@ const fields: FieldConfig<keyof Inputs>[] = [
   { key: "otherOverhead", label: "Other overhead (marketing, utilities, insurance, misc.)", prefix: "$", min: 0, max: 20000, step: 250 },
 ];
 
-const initialInputs: Inputs = {
-  monthlyCollections: 90000,
-  staffPayroll: 24000,
-  facilityRent: 6000,
-  labFees: 5000,
-  supplies: 4000,
-  otherOverhead: 5000,
-};
-
-const BENCHMARK_LOW = 60;
-const BENCHMARK_HIGH = 65;
-
 export default function OverheadCalculator() {
-  const [inputs, setInputs] = useState<Inputs>(initialInputs);
+  const [inputs, setInputs] = useState<OverheadPercentageCalculatorInputs>(
+    overheadPercentageInitialInputs
+  );
 
-  const results = useMemo(() => {
-    const totalOverhead =
-      inputs.staffPayroll + inputs.facilityRent + inputs.labFees + inputs.supplies + inputs.otherOverhead;
-    const overheadPct = (totalOverhead / Math.max(inputs.monthlyCollections, 1)) * 100;
-    const netBeforeOwnerPay = inputs.monthlyCollections - totalOverhead;
-    const annualNet = netBeforeOwnerPay * 12;
-    const vsBenchmark =
-      overheadPct < BENCHMARK_LOW
-        ? "below"
-        : overheadPct > BENCHMARK_HIGH
-          ? "above"
-          : "within";
-    return { totalOverhead, overheadPct, netBeforeOwnerPay, annualNet, vsBenchmark };
-  }, [inputs]);
+  const results = useMemo(() => calculateOverheadPercentage(inputs), [inputs]);
 
-  function updateInput(key: keyof Inputs, rawValue: string, field: FieldConfig<keyof Inputs>) {
+  function updateInput(
+    key: keyof OverheadPercentageCalculatorInputs,
+    rawValue: string,
+    field: FieldConfig<keyof OverheadPercentageCalculatorInputs>
+  ) {
     const parsed = Number(rawValue);
     if (Number.isNaN(parsed)) return;
     setInputs((current) => ({ ...current, [key]: clamp(parsed, field.min, field.max) }));
@@ -71,7 +50,7 @@ export default function OverheadCalculator() {
           </div>
           <button
             type="button"
-            onClick={() => setInputs(initialInputs)}
+            onClick={() => setInputs(overheadPercentageInitialInputs)}
             className="w-full rounded-md border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 sm:w-auto"
           >
             Reset
@@ -89,7 +68,7 @@ export default function OverheadCalculator() {
           <p className="text-sm font-semibold uppercase tracking-wider text-blue-100">Overhead percentage</p>
           <div className="mt-3 text-5xl font-extrabold tracking-tight">{results.overheadPct.toFixed(1)}%</div>
           <p className="mt-3 text-sm leading-relaxed text-blue-100">
-            Industry benchmark is typically {BENCHMARK_LOW}-{BENCHMARK_HIGH}%. Your practice is{" "}
+            Industry benchmark is typically {OVERHEAD_BENCHMARK_LOW}-{OVERHEAD_BENCHMARK_HIGH}%. Your practice is{" "}
             <span className="font-semibold text-white">{results.vsBenchmark}</span> that range.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-3">

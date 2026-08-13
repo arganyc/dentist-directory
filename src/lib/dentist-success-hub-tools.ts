@@ -286,6 +286,22 @@ export const DENTIST_SUCCESS_HUB_TOOLS = [
     relatedTools: ["collections-rate-calculator", "monthly-production-goal-calculator"],
   },
   {
+    slug: "overhead-percentage-calculator",
+    title: "Overhead Percentage Calculator",
+    shortDescription: "Estimate operating overhead as a share of monthly collections.",
+    category: "Financial",
+    toolType: "calculator",
+    status: "active",
+    estimatedTime: "4 min",
+    icon: "pie-chart",
+    badge: "Overhead",
+    seoTitle: "Dental Overhead Percentage Calculator",
+    seoDescription:
+      "Calculate dental practice overhead percentage, operating income, annualized overhead, and benchmark status.",
+    keywords: ["dental overhead", "practice overhead", "operating margin", "collections"],
+    relatedTools: ["break-even-calculator", "collections-rate-calculator", "ppo-fee-reduction-calculator"],
+  },
+  {
     slug: "dental-implant-profit-calculator",
     title: "Dental Implant Profit Calculator",
     shortDescription: "Model implant case revenue, costs, chair time, and contribution margin.",
