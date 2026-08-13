@@ -3,41 +3,31 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import SliderField, { type FieldConfig, clamp, formatCurrency } from "@/components/tools/SliderField";
+import {
+  calculateEquipmentRoi,
+  equipmentRoiInitialInputs,
+  type EquipmentRoiCalculatorInputs,
+} from "@/lib/calculators/equipment-roi";
 
-type Inputs = {
-  equipmentCost: number;
-  monthlyIncrementalRevenue: number;
-  monthlyOperatingCost: number;
-  financingMonths: number;
-};
-
-const fields: FieldConfig<keyof Inputs>[] = [
+const fields: FieldConfig<keyof EquipmentRoiCalculatorInputs>[] = [
   { key: "equipmentCost", label: "Equipment cost", prefix: "$", min: 2000, max: 150000, step: 500 },
   { key: "monthlyIncrementalRevenue", label: "Estimated added monthly revenue", prefix: "$", min: 200, max: 15000, step: 100 },
   { key: "monthlyOperatingCost", label: "Added monthly operating cost (supplies, maintenance)", prefix: "$", min: 0, max: 3000, step: 50 },
   { key: "financingMonths", label: "Loan term (0 = paid in cash)", suffix: " mo", min: 0, max: 84, step: 6 },
 ];
 
-const initialInputs: Inputs = {
-  equipmentCost: 35000,
-  monthlyIncrementalRevenue: 3200,
-  monthlyOperatingCost: 300,
-  financingMonths: 36,
-};
-
 export default function EquipmentRoiCalculator() {
-  const [inputs, setInputs] = useState<Inputs>(initialInputs);
+  const [inputs, setInputs] = useState<EquipmentRoiCalculatorInputs>(
+    equipmentRoiInitialInputs
+  );
 
-  const results = useMemo(() => {
-    const monthlyLoanPayment = inputs.financingMonths > 0 ? inputs.equipmentCost / inputs.financingMonths : 0;
-    const netMonthlyBenefitPreLoan = inputs.monthlyIncrementalRevenue - inputs.monthlyOperatingCost;
-    const netMonthlyBenefit = netMonthlyBenefitPreLoan - monthlyLoanPayment;
-    const breakEvenMonths = inputs.equipmentCost / Math.max(netMonthlyBenefitPreLoan, 1);
-    const fiveYearReturn = netMonthlyBenefitPreLoan * 60 - inputs.equipmentCost;
-    return { monthlyLoanPayment, netMonthlyBenefitPreLoan, netMonthlyBenefit, breakEvenMonths, fiveYearReturn };
-  }, [inputs]);
+  const results = useMemo(() => calculateEquipmentRoi(inputs), [inputs]);
 
-  function updateInput(key: keyof Inputs, rawValue: string, field: FieldConfig<keyof Inputs>) {
+  function updateInput(
+    key: keyof EquipmentRoiCalculatorInputs,
+    rawValue: string,
+    field: FieldConfig<keyof EquipmentRoiCalculatorInputs>
+  ) {
     const parsed = Number(rawValue);
     if (Number.isNaN(parsed)) return;
     setInputs((current) => ({ ...current, [key]: clamp(parsed, field.min, field.max) }));
@@ -56,7 +46,7 @@ export default function EquipmentRoiCalculator() {
           </div>
           <button
             type="button"
-            onClick={() => setInputs(initialInputs)}
+            onClick={() => setInputs(equipmentRoiInitialInputs)}
             className="w-full rounded-md border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 sm:w-auto"
           >
             Reset

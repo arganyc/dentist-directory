@@ -338,6 +338,26 @@ export const DENTIST_SUCCESS_HUB_TOOLS = [
     relatedTools: ["new-patient-lifetime-value", "production-per-chair-calculator"],
   },
   {
+    slug: "equipment-roi-calculator",
+    title: "Equipment ROI Calculator",
+    shortDescription: "Model equipment break-even, monthly benefit, and five-year return.",
+    category: "Financial",
+    toolType: "calculator",
+    status: "active",
+    estimatedTime: "5 min",
+    icon: "briefcase",
+    badge: "Equipment",
+    seoTitle: "Dental Equipment ROI Calculator",
+    seoDescription:
+      "Calculate dental equipment ROI, simplified payment, break-even timeline, net monthly benefit, and five-year return.",
+    keywords: ["equipment ROI", "dental equipment", "break-even", "practice investment"],
+    relatedTools: [
+      "break-even-calculator",
+      "overhead-percentage-calculator",
+      "dental-implant-profit-calculator",
+    ],
+  },
+  {
     slug: "ppo-fee-reduction-calculator",
     title: "PPO Fee Reduction Calculator",
     shortDescription: "Estimate how PPO write-offs affect production, collections, and margin.",

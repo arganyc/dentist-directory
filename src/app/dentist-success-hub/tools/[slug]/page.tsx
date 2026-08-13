@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import CaseAcceptanceCalculatorWorkspace from "@/components/case-acceptance-calculator-workspace";
+import EquipmentRoiCalculatorWorkspace from "@/components/equipment-roi-calculator-workspace";
 import HygieneProductionCalculatorWorkspace from "@/components/hygiene-production-calculator-workspace";
 import NoShowCostCalculatorWorkspace from "@/components/no-show-cost-calculator-workspace";
 import OverheadPercentageCalculatorWorkspace from "@/components/overhead-percentage-calculator-workspace";
@@ -215,6 +216,9 @@ function ActiveToolWorkspace({ tool }: { tool: DentistSuccessHubTool }) {
   if (tool.slug === "staff-cost-ratio-calculator") {
     return <StaffCostRatioCalculatorWorkspace />;
   }
+  if (tool.slug === "equipment-roi-calculator") {
+    return <EquipmentRoiCalculatorWorkspace />;
+  }
 
   return <ActiveToolPlaceholder tool={tool} />;
 }
@@ -331,6 +335,7 @@ function workspaceIncludesDisclaimer(tool: DentistSuccessHubTool) {
     "case-acceptance-calculator",
     "hygiene-production-calculator",
     "staff-cost-ratio-calculator",
+    "equipment-roi-calculator",
   ].includes(tool.slug);
 }
 
@@ -353,6 +358,8 @@ function faqForTool(tool: DentistSuccessHubTool): ToolFAQItem[] {
                     ? "Yes. This calculator is available now and uses the same shared calculation logic as the existing member Hygiene Production calculator."
                     : tool.slug === "staff-cost-ratio-calculator"
                       ? "Yes. This calculator is available now and uses the same shared calculation logic as the existing member Staff Cost Ratio calculator."
+                      : tool.slug === "equipment-roi-calculator"
+                        ? "Yes. This calculator is available now and uses the same shared calculation logic as the existing member Equipment ROI calculator."
           : tool.status === "active"
             ? "The route and placeholder workspace are available now. Full tool execution is intentionally deferred."
           : "This page is a preview. Full tool execution is intentionally deferred.",
@@ -387,6 +394,9 @@ function disclaimerForTool(tool: DentistSuccessHubTool) {
   }
   if (tool.slug === "staff-cost-ratio-calculator") {
     return "This calculator is an estimate for practice business planning. It does not provide employment-law, tax, accounting, compensation, staffing, or financial advice, and results are not saved to DentistOS in this phase.";
+  }
+  if (tool.slug === "equipment-roi-calculator") {
+    return "This calculator is an estimate for practice business planning. It does not provide lending, tax, legal, accounting, financing, or investment advice, and results are not saved to DentistOS in this phase.";
   }
 
   return "This page is a product workspace shell. It does not provide clinical, legal, financial, or tax advice, and this routing phase does not implement calculator or generator logic.";
