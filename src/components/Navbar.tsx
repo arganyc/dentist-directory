@@ -8,6 +8,7 @@ const mobileLinks = [
   { href: "/dentists", label: "Find a Dentist" },
   { href: "/blog", label: "Blog" },
   { href: "/for-dentists", label: "For Dentists" },
+  { href: "/dentistos", label: "DentOS" },
   { href: "/dentist-success-hub", label: "Dentist Success Hub" },
   { href: "/tools", label: "Free Tools" },
   { href: "/pricing", label: "Pricing" },
@@ -52,6 +53,12 @@ export default function Navbar() {
             className="hidden rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 md:inline-block"
           >
             For Dentists
+          </Link>
+          <Link
+            href="/dentistos"
+            className="hidden rounded-md px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 lg:inline-block"
+          >
+            DentOS
           </Link>
           <Link
             href="/dentist-success-hub"
@@ -114,7 +121,11 @@ export default function Navbar() {
                 <Link
                   key={item.href + item.label}
                   href={item.href}
-                  className="rounded-lg px-3 py-3 text-base font-medium text-slate-700 transition hover:bg-blue-50 hover:text-blue-700"
+                  className={
+                    item.href === "/dentistos"
+                      ? "rounded-lg bg-blue-50 px-3 py-3 text-base font-semibold text-blue-700 transition hover:bg-blue-100"
+                      : "rounded-lg px-3 py-3 text-base font-medium text-slate-700 transition hover:bg-blue-50 hover:text-blue-700"
+                  }
                   onClick={closeMobileMenu}
                 >
                   {item.label}
