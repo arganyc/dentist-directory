@@ -39,10 +39,10 @@ export default function ClaimLinkForm({ token }: { token: string }) {
           {error}
         </div>
       )}
-      <h2 className="text-lg font-bold text-slate-900">Link this claim to DentistOS</h2>
+      <h2 className="text-lg font-bold text-slate-900">Link this claim to DentOS</h2>
       <p className="mt-2 text-sm leading-relaxed text-slate-600">
         This uses your existing claim link to connect the matching public dentist listing to your
-        signed-in DentistOS account.
+        signed-in DentOS account.
       </p>
       <button
         type="button"
