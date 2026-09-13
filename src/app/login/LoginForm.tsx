@@ -4,6 +4,14 @@ import { useState } from "react";
 
 type Status = "idle" | "submitting" | "sent" | "error";
 
+function friendlyError(code?: string): string {
+  if (code === "invalid_email") return "Please enter a valid email address.";
+  if (code === "login_request_failed") {
+    return "We couldn't send the secure sign-in link right now. Please try again in a moment.";
+  }
+  return "Unable to send the login link. Please try again.";
+}
+
 export default function LoginForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
@@ -26,7 +34,7 @@ export default function LoginForm() {
       const body = (await response.json()) as { success?: boolean; error?: string };
       if (!response.ok || !body.success) {
         setStatus("error");
-        setError(body.error || "Unable to send login link.");
+        setError(friendlyError(body.error));
         return;
       }
       setStatus("sent");
