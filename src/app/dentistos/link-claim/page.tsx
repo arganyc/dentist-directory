@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/dentistos-auth-server";
 import ClaimLinkForm from "./ClaimLinkForm";
 
 export const metadata = {
-  title: "Link Claim to DentistOS",
+  title: "Link Claim to DentOS",
   robots: { index: false, follow: false },
 };
 
@@ -21,7 +21,7 @@ export default async function DentistOSLinkClaimPage(props: PageProps<"/dentisto
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <nav className="text-sm text-slate-500">
         <Link href="/dentistos/dashboard" className="hover:text-blue-700">
-          DentistOS
+          DentOS
         </Link>{" "}
         / <span className="text-slate-700">Link claim</span>
       </nav>
@@ -29,7 +29,7 @@ export default async function DentistOSLinkClaimPage(props: PageProps<"/dentisto
         Connect your claimed listing
       </h1>
       <p className="mt-3 text-slate-600">
-        Existing claim links can be connected to DentistOS while the original member tools access
+        Existing claim links can be connected to DentOS while the original member tools access
         flow remains unchanged.
       </p>
       <div className="mt-8">
@@ -39,7 +39,7 @@ export default async function DentistOSLinkClaimPage(props: PageProps<"/dentisto
           <div className="rounded-xl border border-dashed border-blue-200 bg-slate-50 p-6">
             <h2 className="font-bold text-slate-900">No claim token provided</h2>
             <p className="mt-2 text-sm text-slate-600">
-              Open this page from a valid claim link to connect a listing to DentistOS.
+              Open this page from a valid claim link to connect a listing to DentOS.
             </p>
           </div>
         )}
