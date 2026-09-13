@@ -49,7 +49,7 @@ export default function LoginForm() {
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-900">
         <h2 className="text-lg font-bold">Check your email</h2>
         <p className="mt-2 text-sm">
-          We sent a secure DentistOS sign-in link. It expires shortly and can only be used once.
+          We sent a secure DentOS sign-in link. It expires shortly and can only be used once.
         </p>
       </div>
     );

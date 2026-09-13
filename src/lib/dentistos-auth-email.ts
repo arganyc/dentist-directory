@@ -15,9 +15,9 @@ export async function sendDentistOSMagicLinkEmail(message: MagicLinkEmail): Prom
   const result = await resend.emails.send({
     from: FROM_EMAIL,
     to: message.email,
-    subject: "Sign in to DentistOS",
+    subject: "Sign in to DentOS",
     text: [
-      "Use this secure link to sign in to DentistOS:",
+      "Use this secure link to sign in to DentOS:",
       "",
       message.magicLink,
       "",
@@ -25,8 +25,8 @@ export async function sendDentistOSMagicLinkEmail(message: MagicLinkEmail): Prom
       "If you did not request this link, you can ignore this email.",
     ].join("\n"),
     html: `
-      <p>Use this secure link to sign in to DentistOS:</p>
-      <p><a href="${escapeHtml(message.magicLink)}">Sign in to DentistOS</a></p>
+      <p>Use this secure link to sign in to DentOS:</p>
+      <p><a href="${escapeHtml(message.magicLink)}">Sign in to DentOS</a></p>
       <p>This link expires at ${escapeHtml(message.expiresAt.toISOString())}.</p>
       <p>If you did not request this link, you can ignore this email.</p>
     `,
