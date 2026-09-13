@@ -2,8 +2,8 @@ import Link from "next/link";
 import LoginForm from "./LoginForm";
 
 export const metadata = {
-  title: "Login to DentistOS",
-  description: "Sign in to DentistOS with a secure email magic link.",
+  title: "Login to DentOS",
+  description: "Sign in to DentOS with a secure email magic link.",
   robots: { index: false, follow: false },
 };
 
@@ -28,18 +28,18 @@ export default async function LoginPage(props: PageProps<"/login">) {
             / <span className="text-slate-700">Login</span>
           </nav>
           <p className="mt-8 text-sm font-semibold uppercase tracking-wider text-blue-700">
-            DentistOS
+            DentOS
           </p>
           <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900">
             Sign in to your practice workspace
           </h1>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-600">
-            DentistOS uses secure email links for internal practice access. Your existing claim
-            links and member tools continue to work separately.
+            DentOS uses secure email links for practice access. Your existing claim links and member
+            tools continue to work separately.
           </p>
           {verified && (
             <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-              You are signed in to DentistOS.
+              You are signed in to DentOS.
             </div>
           )}
           {invalidLink && (
