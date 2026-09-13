@@ -11,6 +11,7 @@
     "import-dentists": "node scripts/import-dentists.ts",
     "import-capped": "node scripts/import-capped-cities.ts",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.ts",
+    "db:migrate-auth": "node --env-file-if-exists=.env.local scripts/migrate-dentistos-auth.ts",
     "db:fix-casing": "node --env-file-if-exists=.env.local scripts/fix-casing.ts"
   },
   "dependencies": {

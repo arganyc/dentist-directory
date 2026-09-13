@@ -52,7 +52,8 @@ export function createDentistOSLoginRequestHandler(deps: LoginHandlerDeps) {
         repository: deps.repository,
         sendMagicLink: deps.sendMagicLink,
       });
-    } catch {
+    } catch (error) {
+      console.error("[dentistos-auth] login request failed", describeLoginFailure(error));
       return json({ success: false, error: "login_request_failed" }, 500);
     }
 
@@ -102,6 +103,38 @@ export function createDentistOSLogoutHandler(deps: LogoutHandlerDeps) {
         },
       }
     );
+  };
+}
+
+function describeLoginFailure(error: unknown): Record<string, string | undefined> {
+  if (!(error instanceof Error)) return { category: "unknown" };
+
+  const candidate = error as Error & { code?: string };
+  const message = error.message.toLowerCase();
+  let category = "unknown";
+
+  if (candidate.code?.startsWith("42P01") || message.includes("does not exist")) {
+    category = "database_schema";
+  } else if (
+    message.includes("database") ||
+    message.includes("postgres") ||
+    message.includes("connection") ||
+    message.includes("timeout")
+  ) {
+    category = "database_connection";
+  } else if (
+    message.includes("resend") ||
+    message.includes("email") ||
+    message.includes("sender") ||
+    message.includes("domain")
+  ) {
+    category = "email_delivery";
+  }
+
+  return {
+    category,
+    code: candidate.code,
+    message: error.message.slice(0, 300),
   };
 }
 
