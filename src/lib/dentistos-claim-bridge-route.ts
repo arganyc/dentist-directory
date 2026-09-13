@@ -1,12 +1,20 @@
 import type { DentistOSUser } from "./dentistos-auth";
 import {
   linkClaimToDentistOS,
+  type DentistOSClaimBridgeClaim,
   type DentistOSClaimBridgeRepository,
+  type DentistOSClaimBridgeResult,
 } from "./dentistos-claim-bridge";
+import type { DentOSClaimSyncResult } from "./dentos-api-client";
 
 type ClaimLinkHandlerDeps = {
   currentUser: () => Promise<DentistOSUser | null>;
   repository: DentistOSClaimBridgeRepository;
+  syncDentOSClaim?: (input: {
+    user: DentistOSUser;
+    claim: DentistOSClaimBridgeClaim;
+    linkResult: DentistOSClaimBridgeResult;
+  }) => Promise<DentOSClaimSyncResult>;
 };
 
 export function createDentistOSClaimLinkHandler(deps: ClaimLinkHandlerDeps) {
@@ -38,7 +46,19 @@ export function createDentistOSClaimLinkHandler(deps: ClaimLinkHandlerDeps) {
       return json({ success: false, error: result.status }, status);
     }
 
-    return json(result, 200);
+    let dentosSync: DentOSClaimSyncResult = { status: "DEFERRED" };
+    if (deps.syncDentOSClaim) {
+      const claim = await deps.repository.getClaimByAccessToken(token);
+      if (claim) {
+        dentosSync = await deps.syncDentOSClaim({
+          user,
+          claim,
+          linkResult: result,
+        });
+      }
+    }
+
+    return json({ ...result, dentosSync }, 200);
   };
 }
 
