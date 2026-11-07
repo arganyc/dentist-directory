@@ -39,10 +39,11 @@ test("POST handler publishes a valid DentistOS payload", async () => {
     action: "created",
   });
   assert.equal(receivedPayload?.candidate_id, 123);
+  assert.equal(receivedPayload?.npi, "1234567890");
   assert.equal(receivedPayload?.slug, "example-dental");
 });
 
-test("upsert creates a new dentist row keyed by candidate_id", async () => {
+test("upsert creates a new dentist row keyed by NPI", async () => {
   const fake = fakeSql();
 
   const result = await upsertDentistOSListingWithSql(validPayload(), fake.sql);
@@ -54,7 +55,7 @@ test("upsert creates a new dentist row keyed by candidate_id", async () => {
     action: "created",
   });
   assert.equal(fake.insertCalls.length, 1);
-  assert.equal(fake.insertCalls[0].params[0], "123");
+  assert.equal(fake.insertCalls[0].params[0], "1234567890");
   assert.equal(fake.insertCalls[0].params[1], "example-dental");
   assert.equal(fake.insertCalls[0].params[4], "General Dentistry");
   assert.equal(fake.insertCalls[0].params[9], "VA");
@@ -160,6 +161,23 @@ test("upsert prevents duplicate dentist rows when slug belongs to another id", a
   assert.equal(fake.insertCalls.length, 0);
 });
 
+test("handler rejects a missing or invalid NPI", async () => {
+  const handler = createDentistOSListingsPostHandler({
+    expectedToken: () => "test-token",
+    upsert: async () => {
+      throw new Error("upsert should not run");
+    },
+  });
+
+  for (const npi of ["", "123", "123456789X"]) {
+    const response = await handler(request(validPayload({ npi }), "test-token"));
+    const body = await response.json();
+
+    assert.equal(response.status, 400);
+    assert.equal(body.error, "invalid_payload");
+  }
+});
+
 test("token verification requires the configured bearer token", () => {
   assert.equal(verifyDentistOSBearerToken("Bearer test-token", "test-token"), true);
   assert.equal(verifyDentistOSBearerToken("Bearer test-token", "other-token"), false);
@@ -175,6 +193,7 @@ test("payload validator accepts the exact DentistOS publish payload contract", (
     "candidate_id",
     "city",
     "description",
+    "npi",
     "phone",
     "practice_category",
     "practice_name",
@@ -203,6 +222,7 @@ function request(payload: unknown, token: string | null): Request {
 function validPayload(overrides: Partial<DentistOSPublishPayload> = {}): DentistOSPublishPayload {
   return {
     candidate_id: 123,
+    npi: "1234567890",
     practice_name: "Example Dental",
     slug: "example-dental",
     website: "https://example.com",
