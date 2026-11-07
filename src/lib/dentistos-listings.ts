@@ -3,6 +3,7 @@ import { slugify, US_STATES, type Specialty } from "./dentists";
 
 export type DentistOSPublishPayload = {
   candidate_id: number;
+  npi: string;
   practice_name: string;
   slug: string;
   website: string | null;
@@ -80,6 +81,11 @@ export function validateDentistOSPublishPayload(value: unknown): DentistOSPublis
     errors.push("candidate_id must be a positive integer");
   }
 
+  const npi = requiredString(value.npi, "npi", errors);
+  if (npi && !/^\d{10}$/.test(npi)) {
+    errors.push("npi must contain exactly 10 digits");
+  }
+
   const practiceName = requiredString(value.practice_name, "practice_name", errors);
   const slug = requiredString(value.slug, "slug", errors);
   if (slug && slugify(slug) !== slug) {
@@ -116,6 +122,7 @@ export function validateDentistOSPublishPayload(value: unknown): DentistOSPublis
 
   return {
     candidate_id: candidateId as number,
+    npi,
     practice_name: practiceName,
     slug,
     website,
@@ -154,7 +161,7 @@ export function mapDentistOSPayloadToListingRow(
   }
 
   return {
-    id: String(payload.candidate_id),
+    id: payload.npi,
     slug: payload.slug,
     name: payload.practice_name,
     credentials: existing?.credentials ?? "",
