@@ -36,7 +36,7 @@ export async function upsertDentistOSListingWithSql(
   payload: DentistOSPublishPayload,
   sql: DentistOSSqlClient
 ): Promise<DentistOSPublishOutcome> {
-  const id = String(payload.candidate_id);
+  const id = payload.npi;
   const existingById = await findListingById(sql, id);
   const existingBySlug = await findListingBySlug(sql, payload.slug);
 
