@@ -50,7 +50,7 @@ test("upsert creates a new dentist row keyed by NPI", async () => {
 
   assert.deepEqual(result, {
     success: true,
-    external_id: "123",
+    external_id: "1234567890",
     external_url: "/dentists/example-dental",
     action: "created",
   });
