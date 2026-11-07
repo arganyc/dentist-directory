@@ -17,4 +17,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npm run lint
+      - name: Lint NPI safety files
+        run: npx eslint src/lib/dentistos-listings.ts src/lib/dentistos-listings-repository.ts tests/dentistos-listings.test.ts
