@@ -24,7 +24,7 @@ export async function getDentistOSListingPreflightWithSql(
         EXISTS (
           SELECT 1
           FROM claims
-          WHERE (dentist_id = $1 OR npi = $1)
+          WHERE npi = $1
             AND LOWER(status) NOT IN ('rejected', 'denied')
         ) AS claimed
     `,

@@ -75,6 +75,8 @@ test("repository resolves listing and claim state without optional link tables",
     claimed: true,
   });
   assert.match(queryText, /FROM claims/);
+  assert.match(queryText, /WHERE npi = \$1/);
+  assert.doesNotMatch(queryText, /dentist_id/);
   assert.doesNotMatch(queryText, /practice_listing_links/);
 });
 
