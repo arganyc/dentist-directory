@@ -26,11 +26,6 @@ export async function getDentistOSListingPreflightWithSql(
           FROM claims
           WHERE (dentist_id = $1 OR npi = $1)
             AND LOWER(status) NOT IN ('rejected', 'denied')
-        ) OR EXISTS (
-          SELECT 1
-          FROM practice_listing_links
-          WHERE dentist_id = $1
-            AND status IN ('PENDING', 'VERIFIED')
         ) AS claimed
     `,
     [npi]
@@ -64,7 +59,8 @@ export function createDentistOSListingsGetHandler(deps: DentistOSListingsGetHand
 
     try {
       return json(await deps.preflight(npi), 200);
-    } catch {
+    } catch (error) {
+      console.error("[dentistos-listings-preflight] query failed", error);
       return json({ success: false, error: "preflight_failed" }, 500);
     }
   };
