@@ -57,9 +57,11 @@ test("GET preflight rejects invalid NPI", async () => {
   assert.deepEqual(await response.json(), { success: false, error: "invalid_npi" });
 });
 
-test("repository resolves missing, live, and claimed state in one query", async () => {
+test("repository resolves listing and claim state without optional link tables", async () => {
+  let queryText = "";
   const sql: DentistOSPreflightSqlClient = {
-    query: async (_text, params) => {
+    query: async (text, params) => {
+      queryText = text;
       assert.deepEqual(params, ["1234567890"]);
       return [{ profile_exists: true, slug: "dr-example-1234567890", claimed: true }];
     },
@@ -72,6 +74,8 @@ test("repository resolves missing, live, and claimed state in one query", async 
     profile_url: "/dentists/dr-example-1234567890",
     claimed: true,
   });
+  assert.match(queryText, /FROM claims/);
+  assert.doesNotMatch(queryText, /practice_listing_links/);
 });
 
 function request(npi: string, token: string | null): Request {
