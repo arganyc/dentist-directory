@@ -116,6 +116,34 @@ export function stateNameByCode(code: string): string {
   return STATE_NAME_BY_CODE.get(code.toUpperCase()) ?? code;
 }
 
+const DENTIST_TITLES = new Set(["dr", "doctor"]);
+const DENTIST_CREDENTIALS = new Set(["dds", "dmd"]);
+
+/**
+ * Converts a visitor-entered dentist or practice name into the same word-only
+ * form used by the database search. This makes searches insensitive to case,
+ * punctuation, repeated whitespace, common dentist titles, and DDS/DMD suffixes.
+ */
+export function normalizeDentistSearchQuery(value: string): string {
+  const words = value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  while (words.length > 0 && DENTIST_TITLES.has(words[0])) {
+    words.shift();
+  }
+  while (words.length > 0 && DENTIST_CREDENTIALS.has(words[words.length - 1])) {
+    words.pop();
+  }
+
+  return words.join(" ");
+}
+
 // Matches the slugify in middleware.ts / next.config.ts — must stay in sync
 // so links built with this resolve without an extra redirect hop.
 export function slugify(value: string): string {

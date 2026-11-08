@@ -1,5 +1,5 @@
 import "server-only";
-import { type Dentist, US_STATES } from "./dentists";
+import { normalizeDentistSearchQuery, type Dentist, US_STATES } from "./dentists";
 import { getSql } from "./db";
 import {
   DENTIST_PROFILE_COLS as ALL_COLS,
@@ -93,10 +93,15 @@ export async function searchDentists(opts: SearchOpts): Promise<SearchResult> {
     params.push(`%${opts.location.trim().toLowerCase()}%`);
   }
   if (opts.name && opts.name.trim()) {
-    const pattern = `%${opts.name.trim().toLowerCase()}%`;
-    conditions.push(`(LOWER(name) LIKE $${idx} OR LOWER(practice_name) LIKE $${idx})`);
-    idx++;
-    params.push(pattern);
+    const normalizedName = normalizeDentistSearchQuery(opts.name);
+    if (normalizedName) {
+      const pattern = `%${normalizedName}%`;
+      const searchableName = `TRIM(regexp_replace(LOWER(name), '[^a-z0-9]+', ' ', 'g'))`;
+      const searchablePractice = `TRIM(regexp_replace(LOWER(practice_name), '[^a-z0-9]+', ' ', 'g'))`;
+      conditions.push(`(${searchableName} LIKE $${idx} OR ${searchablePractice} LIKE $${idx})`);
+      idx++;
+      params.push(pattern);
+    }
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
