@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireUser } from "@/lib/dentistos-auth-server";
+import { getCurrentUser } from "@/lib/dentistos-auth-server";
 
 export const metadata = {
   title: "DentistOS",
@@ -11,7 +11,9 @@ export default async function DentistOSLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await requireUser();
+  // Individual DentistOS pages enforce authentication. Keeping the shared
+  // layout non-redirecting lets claim-entry pages preserve their return URL.
+  const user = await getCurrentUser();
 
   return (
     <div className="min-h-full bg-slate-50">
@@ -22,7 +24,13 @@ export default async function DentistOSLayout({
               DentistOS
             </Link>
             <p className="mt-0.5 text-sm text-slate-500">
-              Signed in as <span className="font-semibold text-slate-800">{user.email}</span>
+              {user ? (
+                <>
+                  Signed in as <span className="font-semibold text-slate-800">{user.email}</span>
+                </>
+              ) : (
+                "Secure practice workspace"
+              )}
             </p>
           </div>
           <nav className="flex items-center gap-2 text-sm">
