@@ -314,12 +314,34 @@ async function main(): Promise<void> {
       review_count            INT NOT NULL,
       accepting_new_patients  BOOLEAN NOT NULL,
       years_experience        INT NOT NULL,
-      is_premium              BOOLEAN NOT NULL DEFAULT FALSE
+      is_premium              BOOLEAN NOT NULL DEFAULT FALSE,
+      is_test                 BOOLEAN NOT NULL DEFAULT FALSE,
+      is_claimed              BOOLEAN NOT NULL DEFAULT FALSE,
+      membership_tier         TEXT NOT NULL DEFAULT 'BASIC'
+                                CHECK (membership_tier IN ('BASIC', 'PROFESSIONAL', 'PREMIUM_PLUS'))
     )
   `;
   // ADD COLUMN IF NOT EXISTS covers the case where the table already existed
   // before is_premium was introduced — running migrate on an older DB.
   await sql`ALTER TABLE dentists ADD COLUMN IF NOT EXISTS is_premium BOOLEAN NOT NULL DEFAULT FALSE`;
+  await sql`ALTER TABLE dentists ADD COLUMN IF NOT EXISTS is_test BOOLEAN NOT NULL DEFAULT FALSE`;
+  await sql`ALTER TABLE dentists ADD COLUMN IF NOT EXISTS is_claimed BOOLEAN NOT NULL DEFAULT FALSE`;
+  await sql`ALTER TABLE dentists ADD COLUMN IF NOT EXISTS membership_tier TEXT NOT NULL DEFAULT 'BASIC'`;
+  await sql`
+    DO $
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conrelid = 'dentists'::regclass
+          AND conname = 'dentists_membership_tier_check'
+      ) THEN
+        ALTER TABLE dentists
+          ADD CONSTRAINT dentists_membership_tier_check
+          CHECK (membership_tier IN ('BASIC', 'PROFESSIONAL', 'PREMIUM_PLUS'));
+      END IF;
+    END $;
+  `;
+  await sql`UPDATE dentists SET membership_tier = 'PROFESSIONAL' WHERE is_premium = TRUE AND membership_tier = 'BASIC'`;
   await sql`
     CREATE TABLE IF NOT EXISTS claims (
       id              SERIAL PRIMARY KEY,
@@ -328,6 +350,7 @@ async function main(): Promise<void> {
       phone           TEXT NOT NULL,
       npi             TEXT NOT NULL,
       dentist_id      TEXT REFERENCES dentists(id) ON DELETE SET NULL,
+      is_test         BOOLEAN NOT NULL DEFAULT FALSE,
       practice_name   TEXT NOT NULL,
       address         TEXT NOT NULL,
       website         TEXT,
@@ -343,6 +366,7 @@ async function main(): Promise<void> {
   // review that still gates edits to the public listing itself).
   await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS access_token TEXT UNIQUE`;
   await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS dentist_id TEXT`;
+  await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS is_test BOOLEAN NOT NULL DEFAULT FALSE`;
   await sql`
     DO $$
     BEGIN
@@ -365,6 +389,7 @@ async function main(): Promise<void> {
   await sql`CREATE INDEX IF NOT EXISTS idx_claims_dentist_id ON claims(dentist_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_claims_dentistos_user_id ON claims(dentistos_user_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_claims_dentistos_practice_id ON claims(dentistos_practice_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_claims_is_test ON claims(is_test)`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS users (
@@ -447,7 +472,16 @@ async function main(): Promise<void> {
   await sql`CREATE INDEX IF NOT EXISTS idx_practice_listing_links_status ON practice_listing_links(status)`;
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_practice_listing_links_active_dentist ON practice_listing_links(dentist_id) WHERE status IN ('PENDING', 'VERIFIED')`;
 
+  // These tables are server-managed. The application connects directly with
+  // DATABASE_URL, so public Data API roles do not need access.
+  await sql`ALTER TABLE practices ENABLE ROW LEVEL SECURITY`;
+  await sql`ALTER TABLE practice_memberships ENABLE ROW LEVEL SECURITY`;
+  await sql`ALTER TABLE practice_listing_links ENABLE ROW LEVEL SECURITY`;
+  await sql`REVOKE ALL ON practices, practice_memberships, practice_listing_links FROM anon, authenticated`;
+
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_state_code ON dentists(state_code)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_dentists_public_visibility ON dentists(is_test, state_code, city)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_dentists_membership_tier ON dentists(membership_tier)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_state_city ON dentists(state_code, city)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_specialty ON dentists(specialty)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_dentists_accepting ON dentists(accepting_new_patients) WHERE accepting_new_patients`;
