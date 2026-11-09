@@ -1,4 +1,4 @@
-import type { NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getClaimByToken, TOOLS_ACCESS_COOKIE } from "@/lib/toolsAccess";
 
 export async function GET(req: NextRequest): Promise<Response> {
@@ -6,14 +6,18 @@ export async function GET(req: NextRequest): Promise<Response> {
   const claim = token ? await getClaimByToken(token) : null;
 
   const destination = claim ? "/tools/member" : "/claim?source=expired-tools-link";
-  const res = Response.redirect(new URL(destination, req.url), 303);
+  const res = NextResponse.redirect(new URL(destination, req.url), 303);
 
   if (claim) {
-    const secureAttr = process.env.NODE_ENV === "production" ? "; Secure" : "";
-    res.headers.append(
-      "Set-Cookie",
-      `${TOOLS_ACCESS_COOKIE}=${token}; Path=/; Max-Age=${60 * 60 * 24 * 365}; HttpOnly; SameSite=Lax${secureAttr}`
-    );
+    res.cookies.set({
+      name: TOOLS_ACCESS_COOKIE,
+      value: token,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
   }
   return res;
 }
