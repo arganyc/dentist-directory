@@ -22,10 +22,13 @@ export type DentistRow = {
   accepting_new_patients: boolean;
   years_experience: number;
   is_premium: boolean;
+  membership_tier: "BASIC" | "PROFESSIONAL" | "PREMIUM_PLUS";
+  is_claimed: boolean;
+  is_test: boolean;
 };
 
 export const DENTIST_PROFILE_COLS =
-  "id, slug, name, credentials, specialty, practice_name, street, city, state, state_code, zip, phone, rating, review_count, accepting_new_patients, years_experience, is_premium";
+  "id, slug, name, credentials, specialty, practice_name, street, city, state, state_code, zip, phone, rating, review_count, accepting_new_patients, years_experience, is_premium, membership_tier, is_claimed, is_test";
 
 export function rowToDentist(r: DentistRow): Dentist {
   return {
@@ -55,6 +58,9 @@ export function rowToDentist(r: DentistRow): Dentist {
     insurance: [],
     hours: [],
     isPremium: r.is_premium,
+    membershipTier: r.membership_tier,
+    isClaimed: r.is_claimed,
+    isTest: r.is_test,
   };
 }
 
