@@ -188,21 +188,24 @@ export async function POST(req: NextRequest): Promise<Response> {
   const storedInput = { ...input, message: storedMessage || undefined };
 
   const sql = getSql();
+  let listingIsTest = false;
   if (input.dentistId) {
-    const dentistRows = (await sql.query(`SELECT id FROM dentists WHERE id = $1 LIMIT 1`, [
-      input.dentistId,
-    ])) as { id: string }[];
+    const dentistRows = (await sql.query(
+      `SELECT id, is_test FROM dentists WHERE id = $1 LIMIT 1`,
+      [input.dentistId]
+    )) as { id: string; is_test: boolean }[];
     if (dentistRows.length === 0) {
       return badRequest("Dentist listing not found");
     }
+    listingIsTest = dentistRows[0].is_test;
   }
 
   let claimId: number;
   const accessToken = generateAccessToken();
   try {
     const rows = (await sql.query(
-      `INSERT INTO claims (name, email, phone, npi, dentist_id, practice_name, address, website, message, access_token)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+      `INSERT INTO claims (name, email, phone, npi, dentist_id, practice_name, address, website, message, access_token, is_test)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`,
       [
         input.name,
         input.email,
@@ -214,9 +217,19 @@ export async function POST(req: NextRequest): Promise<Response> {
         input.website ?? null,
         storedInput.message ?? null,
         accessToken,
+        listingIsTest,
       ]
     )) as { id: number }[];
     claimId = rows[0].id;
+
+    // Demo listings may exercise the full claim UX without changing the
+    // verification status of any real dentist profile.
+    if (input.dentistId && listingIsTest) {
+      await sql.query(
+        `UPDATE dentists SET is_claimed = TRUE WHERE id = $1 AND is_test = TRUE`,
+        [input.dentistId]
+      );
+    }
   } catch (err) {
     console.error("[claim] DB insert failed:", err);
     return Response.json({ ok: false, error: "Failed to save claim" }, { status: 500 });
