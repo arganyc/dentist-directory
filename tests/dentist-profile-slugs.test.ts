@@ -106,6 +106,9 @@ type Row = {
   accepting_new_patients: boolean;
   years_experience: number;
   is_premium: boolean;
+  membership_tier: "BASIC" | "PROFESSIONAL" | "PREMIUM_PLUS";
+  is_claimed: boolean;
+  is_test: boolean;
 };
 
 function row(overrides: Partial<Row> = {}): Row {
@@ -127,6 +130,9 @@ function row(overrides: Partial<Row> = {}): Row {
     accepting_new_patients: false,
     years_experience: 0,
     is_premium: false,
+    membership_tier: "BASIC",
+    is_claimed: false,
+    is_test: false,
     ...overrides,
   };
 }
