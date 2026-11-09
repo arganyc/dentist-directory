@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import type { NextRequest } from "next/server";
 import { getSql } from "@/lib/db";
 import { generateAccessToken, TOOLS_ACCESS_COOKIE } from "@/lib/toolsAccess";
@@ -189,15 +190,17 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   const sql = getSql();
   let listingIsTest = false;
+  let listingSlug: string | undefined;
   if (input.dentistId) {
     const dentistRows = (await sql.query(
-      `SELECT id, is_test FROM dentists WHERE id = $1 LIMIT 1`,
+      `SELECT id, slug, is_test FROM dentists WHERE id = $1 LIMIT 1`,
       [input.dentistId]
-    )) as { id: string; is_test: boolean }[];
+    )) as { id: string; slug: string; is_test: boolean }[];
     if (dentistRows.length === 0) {
       return badRequest("Dentist listing not found");
     }
     listingIsTest = dentistRows[0].is_test;
+    listingSlug = dentistRows[0].slug;
   }
 
   let claimId: number;
@@ -229,6 +232,9 @@ export async function POST(req: NextRequest): Promise<Response> {
         `UPDATE dentists SET is_claimed = TRUE WHERE id = $1 AND is_test = TRUE`,
         [input.dentistId]
       );
+      if (listingSlug) {
+        revalidatePath(`/dentists/${listingSlug}`);
+      }
     }
   } catch (err) {
     console.error("[claim] DB insert failed:", err);
