@@ -9,6 +9,7 @@ export async function GET() {
   const sql = getSql()
   const dentists = await sql`
     SELECT slug FROM dentists
+    WHERE is_test = FALSE
     ORDER BY id
     LIMIT 50000 OFFSET 50000
   `
