@@ -88,9 +88,26 @@ export function addDays(date: Date, days: number): Date {
   return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 }
 
-export function buildMagicLinkUrl(siteUrl: string, rawToken: string): string {
+export function sanitizeDentistOSReturnTo(value: string | null | undefined): string | null {
+  const candidate = value?.trim() ?? "";
+  if (!candidate.startsWith("/") || candidate.startsWith("//")) return null;
+
+  const base = "https://dentistos-return.invalid";
+  const parsed = new URL(candidate, base);
+  if (parsed.origin !== base || !parsed.pathname.startsWith("/dentistos/")) return null;
+
+  return `${parsed.pathname}${parsed.search}`;
+}
+
+export function buildMagicLinkUrl(
+  siteUrl: string,
+  rawToken: string,
+  returnTo?: string | null
+): string {
   const url = new URL("/api/dentistos/auth/callback", siteUrl);
   url.searchParams.set("token", rawToken);
+  const safeReturnTo = sanitizeDentistOSReturnTo(returnTo);
+  if (safeReturnTo) url.searchParams.set("returnTo", safeReturnTo);
   return url.toString();
 }
 
@@ -100,6 +117,7 @@ export async function requestMagicLink(input: {
   siteUrl: string;
   repository: DentistOSAuthRepository;
   sendMagicLink: (message: MagicLinkEmail) => Promise<void>;
+  returnTo?: string | null;
   now?: Date;
 }): Promise<MagicLinkRequestResult> {
   const email = normalizeEmail(input.email);
@@ -122,7 +140,7 @@ export async function requestMagicLink(input: {
 
   await input.sendMagicLink({
     email,
-    magicLink: buildMagicLinkUrl(input.siteUrl, rawToken),
+    magicLink: buildMagicLinkUrl(input.siteUrl, rawToken, input.returnTo),
     expiresAt,
   });
 
