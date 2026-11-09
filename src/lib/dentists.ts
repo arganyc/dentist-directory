@@ -16,6 +16,8 @@ export type Specialty =
   | "Prosthodontics"
   | "Dental Public Health";
 
+export type DentistMembershipTier = "BASIC" | "PROFESSIONAL" | "PREMIUM_PLUS";
+
 export type Dentist = {
   id: string;
   slug: string;
@@ -43,6 +45,9 @@ export type Dentist = {
   insurance: string[];
   hours: { day: string; hours: string }[];
   isPremium: boolean;
+  membershipTier?: DentistMembershipTier;
+  isClaimed?: boolean;
+  isTest?: boolean;
 };
 
 export const allSpecialties: Specialty[] = [
