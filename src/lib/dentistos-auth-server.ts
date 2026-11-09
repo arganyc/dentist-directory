@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import {
   DENTISTOS_SESSION_COOKIE,
   getCurrentUserFromSessionToken,
+  sanitizeDentistOSReturnTo,
   type DentistOSUser,
 } from "./dentistos-auth";
 import { PostgresDentistOSAuthRepository } from "./dentistos-auth-data";
@@ -23,10 +24,11 @@ export async function getCurrentUser(): Promise<DentistOSUser | null> {
   });
 }
 
-export async function requireUser(): Promise<DentistOSUser> {
+export async function requireUser(returnTo?: string): Promise<DentistOSUser> {
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/login");
+    const safeReturnTo = sanitizeDentistOSReturnTo(returnTo);
+    redirect(safeReturnTo ? `/login?returnTo=${encodeURIComponent(safeReturnTo)}` : "/login");
   }
   return user;
 }

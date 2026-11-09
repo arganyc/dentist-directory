@@ -12,7 +12,7 @@ function friendlyError(code?: string): string {
   return "Unable to send the login link. Please try again.";
 }
 
-export default function LoginForm() {
+export default function LoginForm({ returnTo }: { returnTo?: string }) {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
 
@@ -29,7 +29,7 @@ export default function LoginForm() {
       const response = await fetch("/api/dentistos/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, returnTo }),
       });
       const body = (await response.json()) as { success?: boolean; error?: string };
       if (!response.ok || !body.success) {

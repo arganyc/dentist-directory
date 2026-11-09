@@ -273,7 +273,7 @@ test("claim creation stores canonical dentist_id without changing member tools a
   );
 
   assert.match(claimRouteSource, /dentistId: pickString\(obj\.dentistId\)/);
-  assert.match(claimRouteSource, /SELECT id FROM dentists WHERE id = \$1 LIMIT 1/);
+  assert.match(claimRouteSource, /SELECT id, slug, is_test FROM dentists WHERE id = \$1 LIMIT 1/);
   assert.match(claimRouteSource, /INSERT INTO claims \(name, email, phone, npi, dentist_id/);
   assert.match(claimRouteSource, /toolsUrl: "\/tools\/member"/);
   assert.match(claimPageSource, /getDentistBySlug\(practiceSlug\)/);
@@ -310,6 +310,8 @@ test("claim link endpoint uses authenticated user and preserves old member-tools
   );
   assert.match(toolsAccessRouteSource, /TOOLS_ACCESS_COOKIE/);
   assert.match(toolsAccessRouteSource, /\/tools\/member/);
+  assert.match(toolsAccessRouteSource, /NextResponse\.redirect/);
+  assert.match(toolsAccessRouteSource, /res\.cookies\.set/);
 });
 
 test("claim link endpoint rejects unauthenticated requests", async () => {
