@@ -11,13 +11,13 @@ import {
 
 export async function getTotalDentistCount(): Promise<number> {
   const sql = getSql();
-  const rows = (await sql`SELECT COUNT(*)::int AS n FROM dentists`) as { n: number }[];
+  const rows = (await sql`SELECT COUNT(*)::int AS n FROM dentists WHERE is_test = FALSE`) as { n: number }[];
   return rows[0]?.n ?? 0;
 }
 
 export async function getCountsByState(): Promise<{ code: string; name: string; count: number }[]> {
   const sql = getSql();
-  const rows = (await sql`SELECT state_code, COUNT(*)::int AS n FROM dentists GROUP BY state_code`) as
+  const rows = (await sql`SELECT state_code, COUNT(*)::int AS n FROM dentists WHERE is_test = FALSE GROUP BY state_code`) as
     { state_code: string; n: number }[];
   const counts = new Map(rows.map((r) => [r.state_code, r.n]));
   return US_STATES.map((s) => ({ code: s.code, name: s.name, count: counts.get(s.code) ?? 0 }))
@@ -31,7 +31,7 @@ export async function getCitiesForState(stateCode: string): Promise<string[]> {
   const rows = (await sql`
     SELECT DISTINCT city
     FROM dentists
-    WHERE state_code = ${stateCode.toUpperCase()} AND city <> ''
+    WHERE state_code = ${stateCode.toUpperCase()} AND city <> '' AND is_test = FALSE
     ORDER BY city
   `) as { city: string }[];
   return rows.map((r) => r.city);
@@ -69,7 +69,7 @@ export async function searchDentists(opts: SearchOpts): Promise<SearchResult> {
   const perPage = Math.min(100, Math.max(1, Math.floor(opts.perPage ?? 20)));
   const offset = (page - 1) * perPage;
 
-  const conditions: string[] = [];
+  const conditions: string[] = ["is_test = FALSE"];
   const params: (string | boolean)[] = [];
   let idx = 1;
 
@@ -137,7 +137,7 @@ export async function getTopCities(count: number): Promise<CityCount[]> {
   const rows = (await sql.query(
     `SELECT city, state_code, COUNT(*)::int AS total
      FROM dentists
-     WHERE city <> ''
+     WHERE city <> '' AND is_test = FALSE
      GROUP BY city, state_code
      ORDER BY total DESC, city ASC
      LIMIT $1`,
@@ -149,7 +149,7 @@ export async function getTopCities(count: number): Promise<CityCount[]> {
 export async function getFeaturedDentists(count: number): Promise<Dentist[]> {
   const sql = getSql();
   const rows = (await sql.query(
-    `SELECT ${ALL_COLS} FROM dentists ORDER BY rating DESC, review_count DESC, accepting_new_patients DESC LIMIT $1`,
+    `SELECT ${ALL_COLS} FROM dentists WHERE is_test = FALSE ORDER BY rating DESC, review_count DESC, accepting_new_patients DESC LIMIT $1`,
     [count]
   )) as Row[];
   return rows.map(rowToDentist);

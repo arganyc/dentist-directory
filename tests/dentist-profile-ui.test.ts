@@ -30,6 +30,21 @@ test("DentistOS-created profile with no valid NPI does not expose fake NPI ident
   assert.doesNotMatch(about, /National Provider Identifier|NPI registry/i);
 });
 
+test("demo profile is clearly identified without NPI verification language", () => {
+  const dentist = dentistFixture({
+    id: "0000000001",
+    isTest: true,
+    membershipTier: "BASIC",
+  });
+  const identity = providerIdentityForDentist(dentist);
+  const about = profileAboutText(dentist);
+
+  assert.equal(identity.npiVerified, false);
+  assert.equal(identity.label, "Test Profile ID");
+  assert.equal(identity.value, "0000000001");
+  assert.doesNotMatch(about, /National Provider Identifier|NPI registry/i);
+});
+
 test("legacy profile with valid 10-digit NPI still displays NPI identity", () => {
   const dentist = dentistFixture({ id: "1234567890" });
   const identity = providerIdentityForDentist(dentist);

@@ -7,10 +7,18 @@ export function validNpi(value: string): string | undefined {
 
 export function providerIdentityForDentist(dentist: Dentist): {
   npi?: string;
-  label: "NPI Number" | "Directory Listing ID";
+  label: "NPI Number" | "Directory Listing ID" | "Test Profile ID";
   value: string;
   npiVerified: boolean;
 } {
+  if (dentist.isTest) {
+    return {
+      label: "Test Profile ID",
+      value: dentist.id,
+      npiVerified: false,
+    };
+  }
+
   const npi = validNpi(dentist.id);
   if (npi) {
     return {
@@ -35,7 +43,7 @@ export function profileAboutText(dentist: Dentist): string {
     dentist.yearsExperience > 0 ? ` Practicing for over ${dentist.yearsExperience} years.` : "";
   const base = `${dentist.name}${dentist.credentials ? `, ${dentist.credentials}` : ""} is a ${dentist.specialty.toLowerCase()} provider based in ${dentist.address.city}, ${dentist.address.stateCode}.${experience}`;
 
-  if (validNpi(dentist.id)) {
+  if (!dentist.isTest && validNpi(dentist.id)) {
     return `${base} Verified through the National Provider Identifier (NPI) registry.`;
   }
 

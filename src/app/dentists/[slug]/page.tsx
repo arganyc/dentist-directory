@@ -78,6 +78,7 @@ export async function generateMetadata(props: PageProps<"/dentists/[slug]">) {
   return {
     title: `${d.name}${d.credentials ? `, ${d.credentials}` : ""} — ${d.specialty} in ${d.address.city}, ${d.address.stateCode}`,
     description: desc,
+    robots: d.isTest ? { index: false, follow: false } : undefined,
     openGraph: {
       title: `${d.name} — ${d.specialty}`,
       description: desc,
@@ -103,16 +104,18 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
     .join("")
     .toUpperCase();
 
-  const jsonLd = buildJsonLd(d);
+  const jsonLd = d.isTest ? null : buildJsonLd(d);
 
   return (
     <div className="bg-slate-50">
-      <script
-        type="application/ld+json"
-        // Stringify and strip "<" to avoid any chance of an XSS escape via injected JSON.
-        // The dentist data comes from our own DB, but defense-in-depth is cheap.
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
-      />
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          // Stringify and strip "<" to avoid any chance of an XSS escape via injected JSON.
+          // The dentist data comes from our own DB, but defense-in-depth is cheap.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+        />
+      )}
       <div className="bg-gradient-to-br from-blue-600 to-blue-800 pb-16 pt-10 text-white">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <nav className="text-sm text-blue-100">
@@ -125,6 +128,11 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
             </Link>{" "}
             / <span className="text-white">{d.name}</span>
           </nav>
+          {d.isTest && (
+            <div className="mt-6 rounded-lg border border-amber-200 bg-amber-100 px-4 py-3 text-sm font-semibold text-amber-950">
+              Demo profile — testing only. This is not a real dentist or practice.
+            </div>
+          )}
           <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
             <div
               aria-hidden
@@ -151,6 +159,18 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
                     <span className="text-sm font-semibold text-white">No reviews yet</span>
                   )}
                 </div>
+                <span className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold text-white ring-1 ring-white/20">
+                  {d.membershipTier === "PREMIUM_PLUS"
+                    ? "Premium Plus"
+                    : d.membershipTier === "PROFESSIONAL"
+                      ? "Professional"
+                      : "Free listing"}
+                </span>
+                {d.isClaimed && (
+                  <span className="rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white shadow">
+                    ✓ Claimed
+                  </span>
+                )}
                 {d.acceptingNewPatients ? (
                   <span className="rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white shadow">
                     ✓ Accepting New Patients
@@ -305,34 +325,61 @@ export default async function DentistProfile(props: PageProps<"/dentists/[slug]"
                 </p>
               ) : (
                 <p className="mt-3 text-xs text-slate-500">
-                  Directory listing ID #{providerIdentity.value}
+                  {providerIdentity.label} #{providerIdentity.value}
                 </p>
               )}
             </div>
 
-            <div className="rounded-xl bg-blue-600 p-6 text-white shadow-sm">
-              <h2 className="text-base font-bold">Are you this dentist?</h2>
-              <p className="mt-2 text-sm text-blue-100">
-                Claim your listing to update your profile, add photos, and capture new patient
-                leads.
-              </p>
-              <Link
-                href={`/claim?practice=${encodeURIComponent(d.slug)}`}
-                className="mt-4 inline-block rounded-md bg-white px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
-              >
-                Claim listing →
-              </Link>
-            </div>
-            <div className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 p-6 text-white shadow-sm">
-              <h2 className="text-base font-bold">Upgrade to Premium</h2>
-              <p className="mt-2 text-sm text-amber-50">Get priority placement, more patient leads, and analytics.</p>
-              <div className="mt-4 space-y-2">
-                <a href="https://buy.stripe.com/6oU14meqt6KbelLfqMaZi00" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white px-4 py-2 text-center text-sm font-semibold text-orange-600 hover:bg-amber-50">⭐ Professional — $29/mo</a>
-                <a href="https://buy.stripe.com/8x27sK5TX1pR91r3I4aZi02" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white/20 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-white/30">⭐ Professional — $279/yr</a>
-                <a href="https://buy.stripe.com/bJe00i2HL0lN5Pf4M8aZi03" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white px-4 py-2 text-center text-sm font-semibold text-orange-600 hover:bg-amber-50">👑 Premium Plus — $79/mo</a>
-                <a href="https://buy.stripe.com/3cIbJ0gyBecD5PfdiEaZi04" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white/20 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-white/30">👑 Premium Plus — $759/yr</a>
+            {d.isClaimed ? (
+              <div className="rounded-xl bg-emerald-600 p-6 text-white shadow-sm">
+                <h2 className="text-base font-bold">Claimed profile</h2>
+                <p className="mt-2 text-sm text-emerald-50">
+                  This profile has completed the listing claim step.
+                </p>
               </div>
-            </div>
+            ) : (
+              <div className="rounded-xl bg-blue-600 p-6 text-white shadow-sm">
+                <h2 className="text-base font-bold">Are you this dentist?</h2>
+                <p className="mt-2 text-sm text-blue-100">
+                  Claim your listing to update your profile, add photos, and capture new patient
+                  leads.
+                </p>
+                <Link
+                  href={`/claim?practice=${encodeURIComponent(d.slug)}`}
+                  className="mt-4 inline-block rounded-md bg-white px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                >
+                  Claim listing →
+                </Link>
+              </div>
+            )}
+            {d.isTest ? (
+              <div className="rounded-xl bg-slate-800 p-6 text-white shadow-sm">
+                <h2 className="text-base font-bold">Demo checkout disabled</h2>
+                <p className="mt-2 text-sm text-slate-200">
+                  Membership visuals are safe to test here. No payment link is active on demo profiles.
+                </p>
+              </div>
+            ) : d.membershipTier === "BASIC" ? (
+              <div className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 p-6 text-white shadow-sm">
+                <h2 className="text-base font-bold">Upgrade to Premium</h2>
+                <p className="mt-2 text-sm text-amber-50">Get priority placement, more patient leads, and analytics.</p>
+                <div className="mt-4 space-y-2">
+                  <a href="https://buy.stripe.com/6oU14meqt6KbelLfqMaZi00" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white px-4 py-2 text-center text-sm font-semibold text-orange-600 hover:bg-amber-50">⭐ Professional — $29/mo</a>
+                  <a href="https://buy.stripe.com/8x27sK5TX1pR91r3I4aZi02" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white/20 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-white/30">⭐ Professional — $279/yr</a>
+                  <a href="https://buy.stripe.com/bJe00i2HL0lN5Pf4M8aZi03" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white px-4 py-2 text-center text-sm font-semibold text-orange-600 hover:bg-amber-50">👑 Premium Plus — $79/mo</a>
+                  <a href="https://buy.stripe.com/3cIbJ0gyBecD5PfdiEaZi04" target="_blank" rel="noopener noreferrer" className="block rounded-md bg-white/20 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-white/30">👑 Premium Plus — $759/yr</a>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 p-6 text-white shadow-sm">
+                <h2 className="text-base font-bold">
+                  {d.membershipTier === "PREMIUM_PLUS" ? "Premium Plus member" : "Professional member"}
+                </h2>
+                <p className="mt-2 text-sm text-emerald-50">
+                  Premium profile benefits are active for this listing.
+                </p>
+              </div>
+            )}
           </aside>
         </div>
 
