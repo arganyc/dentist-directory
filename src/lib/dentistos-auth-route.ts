@@ -6,6 +6,7 @@ import {
   logoutSession,
   normalizeEmail,
   requestMagicLink,
+  sanitizeDentistOSReturnTo,
   verifyMagicLink,
   type DentistOSAuthRepository,
   type MagicLinkEmail,
@@ -40,6 +41,9 @@ export function createDentistOSLoginRequestHandler(deps: LoginHandlerDeps) {
     const obj = (body ?? {}) as Record<string, unknown>;
     const email = typeof obj.email === "string" ? normalizeEmail(obj.email) : "";
     const name = typeof obj.name === "string" ? obj.name.trim() : null;
+    const returnTo = sanitizeDentistOSReturnTo(
+      typeof obj.returnTo === "string" ? obj.returnTo : null
+    );
     if (!isValidEmail(email)) {
       return json({ success: false, error: "invalid_email" }, 400);
     }
@@ -51,6 +55,7 @@ export function createDentistOSLoginRequestHandler(deps: LoginHandlerDeps) {
         siteUrl: deps.siteUrl(),
         repository: deps.repository,
         sendMagicLink: deps.sendMagicLink,
+        returnTo,
       });
     } catch (error) {
       console.error("[dentistos-auth] login request failed", describeLoginFailure(error));
@@ -64,6 +69,7 @@ export function createDentistOSLoginRequestHandler(deps: LoginHandlerDeps) {
 export function createDentistOSMagicLinkCallbackHandler(deps: CallbackHandlerDeps) {
   return async function GET(request: Request): Promise<Response> {
     const url = new URL(request.url);
+    const returnTo = sanitizeDentistOSReturnTo(url.searchParams.get("returnTo"));
     const result = await verifyMagicLink({
       token: url.searchParams.get("token") ?? "",
       repository: deps.repository,
@@ -74,7 +80,9 @@ export function createDentistOSMagicLinkCallbackHandler(deps: CallbackHandlerDep
       return redirectResponse(new URL("/login?error=invalid_link", request.url));
     }
 
-    const response = redirectResponse(new URL("/login?verified=1", request.url));
+    const response = redirectResponse(
+      new URL(returnTo ?? "/login?verified=1", request.url)
+    );
     response.headers.append(
       "Set-Cookie",
       buildSessionCookie(result.rawSessionToken, result.sessionExpiresAt, deps.production())
