@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { sanitizeDentistOSReturnTo } from "@/lib/dentistos-auth";
 import LoginForm from "./LoginForm";
 
 export const metadata = {
@@ -16,6 +17,7 @@ export default async function LoginPage(props: PageProps<"/login">) {
   const searchParams = await props.searchParams;
   const verified = pickString(searchParams.verified) === "1";
   const invalidLink = pickString(searchParams.error) === "invalid_link";
+  const returnTo = sanitizeDentistOSReturnTo(pickString(searchParams.returnTo));
 
   return (
     <div className="bg-slate-50">
@@ -49,7 +51,7 @@ export default async function LoginPage(props: PageProps<"/login">) {
           )}
         </section>
 
-        <LoginForm />
+        <LoginForm returnTo={returnTo ?? undefined} />
       </div>
     </div>
   );
