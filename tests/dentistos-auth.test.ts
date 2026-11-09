@@ -7,6 +7,7 @@ import {
   hashToken,
   logoutSession,
   requestMagicLink,
+  sanitizeDentistOSReturnTo,
   verifyMagicLink,
   type ConsumedMagicLink,
   type DentistOSAuthRepository,
@@ -61,6 +62,16 @@ test("invalid magic link is rejected", async () => {
     success: false,
     reason: "INVALID_OR_EXPIRED_MAGIC_LINK",
   });
+});
+
+test("DentOS return paths are limited to same-site DentOS routes", () => {
+  assert.equal(
+    sanitizeDentistOSReturnTo("/dentistos/link-claim?token=claim-token"),
+    "/dentistos/link-claim?token=claim-token"
+  );
+  assert.equal(sanitizeDentistOSReturnTo("https://evil.example/steal"), null);
+  assert.equal(sanitizeDentistOSReturnTo("//evil.example/steal"), null);
+  assert.equal(sanitizeDentistOSReturnTo("/pricing"), null);
 });
 
 test("expired magic link is rejected", async () => {
@@ -170,7 +181,10 @@ test("login request endpoint sends a magic link without exposing it in the respo
     new Request("https://www.usdentistsdirectory.com/api/dentistos/auth/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email: "dentist@example.com" }),
+      body: JSON.stringify({
+        email: "dentist@example.com",
+        returnTo: "/dentistos/link-claim?token=claim-token",
+      }),
     })
   );
   const body = await response.json();
@@ -178,6 +192,10 @@ test("login request endpoint sends a magic link without exposing it in the respo
   assert.equal(response.status, 200);
   assert.deepEqual(body, { success: true });
   assert.equal(sent.length, 1);
+  assert.equal(
+    new URL(sent[0].magicLink).searchParams.get("returnTo"),
+    "/dentistos/link-claim?token=claim-token"
+  );
 });
 
 test("magic-link callback sets an HttpOnly session cookie", async () => {
@@ -199,6 +217,28 @@ test("magic-link callback sets an HttpOnly session cookie", async () => {
   assert.match(cookie, /HttpOnly/);
   assert.match(cookie, /Secure/);
   assert.match(cookie, /SameSite=Lax/);
+});
+
+test("magic-link callback resumes a validated DentOS claim destination", async () => {
+  const { repo, rawMagicToken } = await requestedMagicLink();
+  const handler = createDentistOSMagicLinkCallbackHandler({
+    repository: repo,
+    production: () => true,
+    now: () => NOW,
+  });
+  const returnTo = "/dentistos/link-claim?token=claim-token";
+
+  const response = await handler(
+    new Request(
+      `https://www.usdentistsdirectory.com/api/dentistos/auth/callback?token=${rawMagicToken}&returnTo=${encodeURIComponent(returnTo)}`
+    )
+  );
+
+  assert.equal(response.status, 303);
+  assert.equal(
+    response.headers.get("location"),
+    `https://www.usdentistsdirectory.com${returnTo}`
+  );
 });
 
 test("logout endpoint deletes the session and clears the cookie", async () => {
