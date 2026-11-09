@@ -19,6 +19,14 @@ const dentistOSHomePageSource = readFileSync(
   new URL("../src/app/dentistos/page.tsx", import.meta.url),
   "utf8"
 );
+const dentistOSLayoutSource = readFileSync(
+  new URL("../src/app/dentistos/layout.tsx", import.meta.url),
+  "utf8"
+);
+const dentistOSLinkClaimPageSource = readFileSync(
+  new URL("../src/app/dentistos/link-claim/page.tsx", import.meta.url),
+  "utf8"
+);
 
 const user: DentistOSUser = {
   id: "user-1",
@@ -30,6 +38,13 @@ test("protected DentistOS routes require an authenticated user", () => {
   assert.match(dashboardPageSource, /requireUser\(\)/);
   assert.match(dentistOSHomePageSource, /requireUser\(\)/);
   assert.match(dentistOSHomePageSource, /redirect\(\"\/dentistos\/dashboard\"\)/);
+});
+
+test("claim-link entry preserves its destination before authentication", () => {
+  assert.match(dentistOSLayoutSource, /getCurrentUser\(\)/);
+  assert.doesNotMatch(dentistOSLayoutSource, /requireUser\(\)/);
+  assert.match(dentistOSLinkClaimPageSource, /requireUser\(returnTo\)/);
+  assert.match(dentistOSLinkClaimPageSource, /\/dentistos\/link-claim\?token=/);
 });
 
 test("unauthenticated practice access is blocked", () => {
