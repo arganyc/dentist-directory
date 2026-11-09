@@ -13,9 +13,12 @@ function pickString(value: string | string[] | undefined): string {
 }
 
 export default async function DentistOSLinkClaimPage(props: PageProps<"/dentistos/link-claim">) {
-  await requireUser();
   const searchParams = await props.searchParams;
   const token = pickString(searchParams.token).trim();
+  const returnTo = token
+    ? `/dentistos/link-claim?token=${encodeURIComponent(token)}`
+    : "/dentistos/link-claim";
+  await requireUser(returnTo);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
